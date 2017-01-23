@@ -4,13 +4,11 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Menus, JvMenus, JvComponentBase, ImgList,
-  JvImageList, StdCtrls, Grids, DBGrids, JvExDBGrids, JvDBGrid, DB,
   DBClient, Buttons, jpeg, ExtCtrls, JvExStdCtrls, JvExExtCtrls,
-  JvExtComponent, JvPanel, JvHtControls, WinSkinData, uLkJSON,
-  WinSkinStore, ComCtrls, JvExComCtrls, JvStatusBar, pngimage, 
-  IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient, IdHTTP,
-  JvExControls, JvAnimatedImage, JvGIFCtrl;
+  JvExtComponent, uLkJSON, ComCtrls, JvExComCtrls, pngimage,
+  IdBaseComponent, IdComponent, IdTCPConnection, IdHTTP,
+  IdTCPClient, JvHtControls, JvAnimatedImage, JvGIFCtrl, JvExControls, DB,
+  StdCtrls, Grids, DBGrids, JvExDBGrids, JvDBGrid, Dialogs;
 
 type
   TFormAgenda = class(TForm)
@@ -27,7 +25,6 @@ type
     PainalLadoEsquerdo: TJvGIFAnimator;
     JvHTLabel1: TJvHTLabel;
     JvHTLabel2: TJvHTLabel;
-    skin: TSkinData;
     Panel1: TPanel;
     Panel2: TPanel;
     Panel3: TPanel;
@@ -230,8 +227,6 @@ end;
 
 procedure TFormAgenda.FormShow(Sender: TObject);
 begin
-  if FileExists(SysUtils.GetCurrentDir + SysUtils.PathDelim + 'no_skin') then
-    skin.Active:= False;
   loadDados();
 end;
 
