@@ -48,6 +48,8 @@ type
     JvGIFAnimator1: TJvGIFAnimator;
     JvGIFAnimator2: TJvGIFAnimator;
     JvHTLabel3: TJvHTLabel;
+    IdHTTP: TIdHTTP;
+    lblUrl: TLabel;
     procedure edtNomeChange(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure grdItensDrawColumnCell(Sender: TObject; const Rect: TRect;
@@ -55,7 +57,10 @@ type
     procedure cdssetor_localGetText(Sender: TField; var Text: String;
       DisplayText: Boolean);
     procedure BitBtn1Click(Sender: TObject);
+    procedure edtNomeKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
+    Host: string;
     procedure loadDados();
   public
     { Public declarations }
@@ -73,20 +78,33 @@ var
   sr : TSearchRec;
 begin
   if FindFirst(fileName, faAnyFile, sr ) = 0 then
-     result := Int64(sr.FindData.nFileSizeHigh) shl Int64(32) + Int64(sr.FindData.nFileSizeLow)
+     Result := Int64(sr.FindData.nFileSizeHigh) shl Int64(32) + Int64(sr.FindData.nFileSizeLow)
   else
-     result := -1;
-  FindClose(sr) ;
+     Result := -1;
+  FindClose(sr);
+end;
+
+function ReadLine(const AFileName: string): string;
+var
+  Arq: TStringList;
+begin
+  Arq:= TStringList.Create;
+  try
+    Arq.LoadFromFile(AFileName);
+    Result:= Arq.Strings[0];
+  finally
+    Arq.Free;
+  end;
 end;
 
 procedure TFormAgenda.loadDados();
 var
+  HostFile: string;
   UrlServico: string;
   js: TlkJSONobject;
   json: TlkJSONlist;
-  lhttp :TIdHTTP;
   Url: string;
-  Str :String;
+  Str : string;
   DbFile: string;
   DbSize: Integer;
   offset: Integer;
@@ -94,36 +112,59 @@ var
 begin
   Screen.Cursor:= crHourGlass;
   cds.DisableControls;
-  DbFile:= SysUtils.GetCurrentDir + SysUtils.PathDelim + '.agenda.bin';
+
+  // Arquivo com o host
+  HostFile:= SysUtils.GetCurrentDir + SysUtils.PathDelim + 'host';
+  if FileExists(HostFile) then
+     Host:= ReadLine(HostFile);
+
+  // Se o host não foi informado, pergunta para o usuário
+  if Trim(Host) = '' then
+  begin
+     Host:= 'http://servicosssi.unb.br:2301';
+     UrlServico:= Host + '/agenda/telefone';
+     if not InputQuery('Olá muito prazer', 'Informe a URL do Web Service da agenda de telefone do CPD:', UrlServico) then
+     begin
+        ShowMessage('A agenda de telefone será finalizada!');
+        Application.Terminate;
+     end;
+  end
+  else
+    UrlServico:= Host + '/agenda/telefone';
+
+  // Arquivo de cache da agenda
+  DbFile:= SysUtils.GetCurrentDir + SysUtils.PathDelim + 'agenda.dat';
   DbSize:= FileSize(DbFile);
+
+  // Se o arquivo de cache dos dados já existe, apenas o carrega-o
   if DbSize > 310 then
     cds.LoadFromFile(DbFile)
   else
   begin
-    UrlServico:= 'http://servicosssi.unb.br:2301/agenda/telefone';
-    if InputQuery('Olá muito prazer', 'Informe a URL do Web Service da agenda de telefone do CPD:', UrlServico) then
-    begin
-      Screen.Cursor:= crHourGlass;
-      lhttp := TIdHTTP.Create(nil);
+      // Já está preparado para carregar muitos dados com várias requisições pequenas
       for i:= 0 to 40 do
       begin
-        Application.ProcessMessages;
         offset:= i * 5000;
-        Url:= UrlServico + '?limit=5000&offset='+ IntToStr(offset);
+
+        // Monta a requisição e envia ao barramento
+        Url:= UrlServico + '?offset='+ IntToStr(offset);
         try
-          Str := lhttp.get(Url);
+          Str := IdHTTP.get(Url);
         except
           ShowMessage('Não foi possível conectar no barramento de serviços. Verifique a conectividade!');
           Application.Terminate;
         end;
+
+        // parser do json
         json := TlkJSON.ParseText(Str) as TlkJSONlist;
-        try
-          if json = nil then
-            Continue; // algum caracter estranho estragou
-          for j:= 0 to json.Count-1 do
-          begin
-            js := json.Child[j] as TlkJSONobject;
-            cds.Append;
+        if json = nil then
+          Continue; // algum caracter estranho estragou
+
+        for j:= 0 to json.Count-1 do
+        begin
+          js := json.Child[j] as TlkJSONobject;
+          cds.Append;
+          try
             cdsid.AsInteger := js.Field['id'].Value;
             if not VarIsNull(js.Field['matricula'].Value) then
               cdsmatricula.AsInteger := js.Field['matricula'].Value;
@@ -136,37 +177,55 @@ begin
             cdscargo.AsString := VarToStr(js.Field['cargo'].Value);
             cdsramal.AsString := VarToStr(js.Field['ramal'].Value);
             cds.Post;
+          except
+            // Algum dado pode ter causado a exception
+            cds.Cancel;
           end;
-        finally
-          json.Free;
         end;
+
+        // chegou ao fim ou tem mais contatos
         if ((json.Count = 0) or (json.Count < 999)) then
-          break;
+          Break;
       end;
-      cds.SaveToFile(DbFile);
-      StatusBar.Panels[1].Text:= 'Barramento: '+ UrlServico;
-      lhttp.Free;
-    end
-    else
-    begin
-      ShowMessage('A agenda de telefone será finalizada!');
-      Application.Terminate;
-    end;
+
+      // Salva a agenda para trabalhar offline
+      try
+        cds.SaveToFile(DbFile);
+      except
+        // Não tem permissão para gravar no disco
+      end;
   end;
   cds.EnableControls;
+  SetFileAttributes(PAnsiChar(HostFile), 2);
   SetFileAttributes(PAnsiChar(DbFile), 2);
+  StatusBar.Panels[1].Text:= 'Barramento: '+ UrlServico;
+  ActiveControl:= edtNome;
   Screen.Cursor:= crDefault;
 end;
 
 procedure TFormAgenda.edtNomeChange(Sender: TObject);
+var
+  NomePesquisa: string;
 begin
-  PainalLadoEsquerdo.Animate:= True;
-  cds.DisableControls;
-  cds.Filtered:= False;
-  cds.FilterOptions:= [foCaseInsensitive];
-  cds.Filter := 'nome like ' + QuotedStr('%' + edtNome.Text + '%');
-  cds.Filtered:= True;
-  cds.EnableControls;
+  NomePesquisa:= Trim(edtNome.Text);
+  if NomePesquisa <> '' then
+  begin
+    PainalLadoEsquerdo.Enabled:= True;
+    PainalLadoEsquerdo.Animate:= True;
+    cds.DisableControls;
+    cds.Filtered:= False;
+    cds.FilterOptions:= [foCaseInsensitive];
+    cds.Filter := 'nome like ' + QuotedStr('%' + edtNome.Text + '%');
+    cds.Filtered:= True;
+    lblUrl.Caption:= Host + '/agenda/telefone?filter="{ "nome__contains" : "'+ edtNome.Text + '" }"';
+    lblUrl.Show;
+    cds.EnableControls;
+  end
+  else
+  begin
+    PainalLadoEsquerdo.Enabled:= False;
+    lblUrl.Hide;
+  end;
 end;
 
 procedure TFormAgenda.FormShow(Sender: TObject);
@@ -210,6 +269,13 @@ end;
 procedure TFormAgenda.BitBtn1Click(Sender: TObject);
 begin
   Application.Terminate;
+end;
+
+procedure TFormAgenda.edtNomeKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key =  VK_DOWN then
+    grdItens.SetFocus;
 end;
 
 end.

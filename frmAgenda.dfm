@@ -1,6 +1,6 @@
 object FormAgenda: TFormAgenda
-  Left = 102
-  Top = 42
+  Left = 106
+  Top = 14
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Pesquisar Telefone/Ramal no CPD/UnB  (Vers'#227'o 1.0.0)'
@@ -21,7 +21,7 @@ object FormAgenda: TFormAgenda
     Left = 9
     Top = 9
     Width = 125
-    Height = 566
+    Height = 75
     Image.Data = {
       87CF00004749463839617D004B00C41C00000000000010001000003131100000
       10101021212131313131316331636331639C42424252525263636363639C639C
@@ -1685,7 +1685,6 @@ object FormAgenda: TFormAgenda
       652044617265446576696C20687474703A2F2F7777772E69616568762E6E6C2F
       75736572732F727673003B}
     Loop = False
-    Align = alLeft
   end
   object JvHTLabel1: TJvHTLabel
     Left = 28
@@ -1881,7 +1880,6 @@ object FormAgenda: TFormAgenda
       272187E4E024E4901C9C841C928393904372701272480E4E420EC9F17FDC7C85
       E2CB10E32B0000000049454E44AE426082}
     Proportional = True
-    Transparent = True
   end
   object JvHTLabel3: TJvHTLabel
     Left = 11
@@ -1895,7 +1893,7 @@ object FormAgenda: TFormAgenda
     Font.Name = 'Arial Black'
     Font.Style = [fsBold]
     ParentFont = False
-    Transparent = True
+    Transparent = False
     Layout = tlCenter
   end
   object GroupBox1: TGroupBox
@@ -1903,7 +1901,6 @@ object FormAgenda: TFormAgenda
     Top = 9
     Width = 946
     Height = 566
-    Align = alClient
     Ctl3D = False
     ParentCtl3D = False
     TabOrder = 0
@@ -5257,6 +5254,20 @@ object FormAgenda: TFormAgenda
         652044617265446576696C20687474703A2F2F7777772E69616568762E6E6C2F
         75736572732F727673003B}
     end
+    object lblUrl: TLabel
+      Left = 32
+      Top = 540
+      Width = 45
+      Height = 13
+      Caption = 'REST Url:'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      Visible = False
+    end
     object grdItens: TJvDBGrid
       Left = 1
       Top = 88
@@ -5354,6 +5365,7 @@ object FormAgenda: TFormAgenda
       ParentFont = False
       TabOrder = 1
       OnChange = edtNomeChange
+      OnKeyDown = edtNomeKeyDown
     end
   end
   object BitBtn1: TBitBtn
@@ -6036,5 +6048,26 @@ object FormAgenda: TFormAgenda
       EA3577DC133EDD71BD778D13DA68E5D8E31BECAF7AF63A5D6DFADCAE72BBDBCD
       9FA458CBBCA6DCD9CD14F69E8AADCB78BF1D2C1EF6DE195D91949ED07AA653CB
       51CE375387A195E763291F9EBB1C5A67D716D3473C9D73F6DE3780}
+  end
+  object IdHTTP: TIdHTTP
+    MaxLineAction = maException
+    ReadTimeout = 0
+    Port = 2301
+    AllowCookies = True
+    ProxyParams.BasicAuthentication = False
+    ProxyParams.ProxyPort = 0
+    Request.ContentLength = -1
+    Request.ContentRangeEnd = 0
+    Request.ContentRangeStart = 0
+    Request.ContentType = 'application/json'
+    Request.CustomHeaders.Strings = (
+      'Content-Type: application/json')
+    Request.Accept = 'application/json'
+    Request.AcceptCharSet = 'UTF-8'
+    Request.BasicAuthentication = False
+    Request.UserAgent = 'AgendaTelefone'
+    HTTPOptions = [hoForceEncodeParams]
+    Left = 80
+    Top = 432
   end
 end

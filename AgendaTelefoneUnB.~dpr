@@ -1,0 +1,17 @@
+program AgendaTelefoneUnB;
+
+uses
+  VCLFixPack,
+  Midaslib,
+  Forms,
+  frmAgenda in 'frmAgenda.pas' {Form1},
+  uLkJSON in 'uLkJSON.pas';
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.Title := 'Pesquisar Telefone/Ramal no CPD/UnB';
+  Application.CreateForm(TForm1, Form1);
+  Application.Run;
+end.
