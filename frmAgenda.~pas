@@ -8,7 +8,7 @@ uses
   JvExtComponent, uLkJSON, ComCtrls, JvExComCtrls, pngimage,
   IdBaseComponent, IdComponent, IdTCPConnection, IdHTTP,
   IdTCPClient, JvHtControls, JvAnimatedImage, JvGIFCtrl, JvExControls, DB,
-  StdCtrls, Grids, DBGrids, JvExDBGrids, JvDBGrid;
+  StdCtrls, Grids, DBGrids, JvExDBGrids, JvDBGrid, Dialogs;
 
 type
   TFormAgenda = class(TForm)
@@ -94,6 +94,27 @@ begin
   end;
 end;
 
+procedure StringToFile(const AFileName: string; const S: string; AAppend: Boolean = False);
+var
+  Arq: TextFile;
+begin
+  AssignFile(Arq, AFileName);
+  try
+    if FileExists(AFileName) then
+    begin
+      if AAppend then
+        Append(Arq)
+      else
+        Reset(Arq);
+    end
+    else
+      Rewrite(Arq);
+    Writeln(Arq, S);
+  finally
+    CloseFile(Arq);
+  end;
+end;
+
 procedure TFormAgenda.loadDados();
 var
   HostFile: string;
@@ -103,6 +124,7 @@ var
   Url: string;
   Str : string;
   DbFile: string;
+  AppDir: string;
   DbSize: Integer;
   offset: Integer;
   i, j: Integer;
@@ -110,8 +132,10 @@ begin
   Screen.Cursor:= crHourGlass;
   cds.DisableControls;
 
+  AppDir:= ExtractFilePath(Application.ExeName);
+
   // Arquivo com o host
-  HostFile:= SysUtils.GetCurrentDir + SysUtils.PathDelim + 'host';
+  HostFile:= AppDir + 'host';
   if FileExists(HostFile) then
      Host:= ReadLine(HostFile);
 
@@ -130,7 +154,7 @@ begin
     UrlServico:= Host + '/agenda/telefone';
 
   // Arquivo de cache da agenda
-  DbFile:= SysUtils.GetCurrentDir + SysUtils.PathDelim + 'agenda.dat';
+  DbFile:= AppDir + 'agenda.dat';
   DbSize:= FileSize(DbFile);
 
   // Se o arquivo de cache dos dados já existe, apenas o carrega-o
@@ -150,6 +174,7 @@ begin
         except
           ShowMessage('Não foi possível conectar no barramento de serviços. Verifique a conectividade!');
           Application.Terminate;
+          Exit;
         end;
 
         // parser do json
@@ -195,6 +220,7 @@ begin
   cds.EnableControls;
   SetFileAttributes(PAnsiChar(HostFile), 2);
   SetFileAttributes(PAnsiChar(DbFile), 2);
+  StringToFile(HostFile, Host, False);
   StatusBar.Panels[1].Text:= 'Barramento: '+ UrlServico;
   ActiveControl:= edtNome;
   Screen.Cursor:= crDefault;
