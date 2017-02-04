@@ -8,30 +8,24 @@ uses
   JvExtComponent, uLkJSON, ComCtrls, JvExComCtrls, pngimage,
   IdBaseComponent, IdComponent, IdTCPConnection, IdHTTP,
   IdTCPClient, JvHtControls, JvAnimatedImage, JvGIFCtrl, JvExControls, DB,
-  StdCtrls, Grids, DBGrids, JvExDBGrids, JvDBGrid, Dialogs;
+  StdCtrls, Grids, DBGrids, JvExDBGrids, JvDBGrid, Dialogs, JvLookOut,
+  JvAnimate, JvNetscapeSplitter, ImgList, JvImageList, JvTabBar,
+  JvTabBarXPPainter, JvImageRotate, JvExForms, JvBaseThumbnail,
+  JvThumbViews;
 
 type
   TFormAgenda = class(TForm)
-    GroupBox1: TGroupBox;
-    BitBtn1: TBitBtn;
     cds: TClientDataSet;
-    grdItens: TJvDBGrid;
-    Label1: TLabel;
-    edtNome: TEdit;
     cdsnome: TStringField;
     cdstelefone1: TStringField;
     cdsramal: TStringField;
     DataSource1: TDataSource;
-    PainalLadoEsquerdo: TJvGIFAnimator;
-    JvHTLabel1: TJvHTLabel;
-    JvHTLabel2: TJvHTLabel;
     Panel1: TPanel;
     Panel2: TPanel;
     Panel3: TPanel;
     Panel4: TPanel;
     Panel5: TPanel;
     Panel6: TPanel;
-    Image2: TImage;
     StatusBar: TStatusBar;
     cdstelefone2: TStringField;
     cdssetor: TStringField;
@@ -42,11 +36,46 @@ type
     cdsemail: TStringField;
     cdslocal: TStringField;
     cdssetor_local: TStringField;
+    IdHTTP: TIdHTTP;
+    JvExpress1: TJvExpress;
+    btnMostraPainelAgendaRamais: TJvExpressButton;
+    btnMostrarAniversariantes: TJvExpressButton;
+    btnReservasSala: TJvExpressButton;
+    PainelAgendaRamais: TGroupBox;
+    Label1: TLabel;
     JvGIFAnimator1: TJvGIFAnimator;
     JvGIFAnimator2: TJvGIFAnimator;
-    JvHTLabel3: TJvHTLabel;
-    IdHTTP: TIdHTTP;
     lblUrl: TLabel;
+    grdItens: TJvDBGrid;
+    edtNome: TEdit;
+    Image2: TImage;
+    JvHTLabel3: TJvHTLabel;
+    BitBtn1: TBitBtn;
+    JvTabBarXPPainter1: TJvTabBarXPPainter;
+    ImageList1: TImageList;
+    JvTabBarXPPainter2: TJvTabBarXPPainter;
+    TabBar: TJvTabBar;
+    PainelAniversariantes: TGroupBox;
+    Label3: TLabel;
+    BitBtn2: TBitBtn;
+    JvTabBar1: TJvTabBar;
+    JvDBGrid1: TJvDBGrid;
+    cdsfoto: TGraphicField;
+    cdsaniversario: TDateField;
+    JvHTLabel1: TJvHTLabel;
+    JvHTLabel2: TJvHTLabel;
+    PainelReservarSalas: TGroupBox;
+    Label2: TLabel;
+    JvGIFAnimator3: TJvGIFAnimator;
+    JvGIFAnimator4: TJvGIFAnimator;
+    Label4: TLabel;
+    JvHTLabel4: TJvHTLabel;
+    grdReservas: TJvDBGrid;
+    Edit1: TEdit;
+    BitBtn3: TBitBtn;
+    JvTabBar2: TJvTabBar;
+    cdsReservasEm: TClientDataSet;
+    IntegerField1: TIntegerField;
     procedure edtNomeChange(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure grdItensDrawColumnCell(Sender: TObject; const Rect: TRect;
@@ -56,6 +85,9 @@ type
     procedure BitBtn1Click(Sender: TObject);
     procedure edtNomeKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure btnMostraPainelAgendaRamaisClick(Sender: TObject);
+    procedure btnMostrarAniversariantesClick(Sender: TObject);
+    procedure btnReservasSalaClick(Sender: TObject);
   private
     Host: string;
     procedure loadDados();
@@ -129,6 +161,7 @@ var
   offset: Integer;
   i, j: Integer;
 begin
+exit;
   Screen.Cursor:= crHourGlass;
   cds.DisableControls;
 
@@ -234,8 +267,6 @@ begin
   NomePesquisa:= Trim(edtNome.Text);
   if NomePesquisa <> '' then
   begin
-    PainalLadoEsquerdo.Enabled:= True;
-    PainalLadoEsquerdo.Animate:= True;
     cds.DisableControls;
     cds.Filtered:= False;
     cds.FilterOptions:= [foCaseInsensitive];
@@ -247,13 +278,13 @@ begin
   end
   else
   begin
-    PainalLadoEsquerdo.Enabled:= False;
     lblUrl.Hide;
   end;
 end;
 
 procedure TFormAgenda.FormShow(Sender: TObject);
 begin
+  PainelAgendaRamais.BringToFront;
   loadDados();
 end;
 
@@ -298,6 +329,22 @@ procedure TFormAgenda.edtNomeKeyDown(Sender: TObject; var Key: Word;
 begin
   if Key =  VK_DOWN then
     grdItens.SetFocus;
+end;
+
+procedure TFormAgenda.btnMostraPainelAgendaRamaisClick(Sender: TObject);
+begin
+  PainelAgendaRamais.BringToFront;
+end;
+
+procedure TFormAgenda.btnMostrarAniversariantesClick(Sender: TObject);
+begin
+  PainelAniversariantes.BringToFront;
+  
+end;
+
+procedure TFormAgenda.btnReservasSalaClick(Sender: TObject);
+begin
+  PainelReservarSalas.BringToFront;
 end;
 
 end.
