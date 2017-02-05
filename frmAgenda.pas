@@ -11,7 +11,7 @@ uses
   StdCtrls, Grids, DBGrids, JvExDBGrids, JvDBGrid, Dialogs, JvLookOut,
   JvAnimate, JvNetscapeSplitter, ImgList, JvImageList, JvTabBar,
   JvTabBarXPPainter, JvImageRotate, JvExForms, JvBaseThumbnail,
-  JvThumbViews;
+  JvThumbViews, Mask, DBCtrls;
 
 type
   TFormAgenda = class(TForm)
@@ -41,55 +41,83 @@ type
     btnMostraPainelAgendaRamais: TJvExpressButton;
     btnMostrarAniversariantes: TJvExpressButton;
     btnReservasSala: TJvExpressButton;
-    PainelAgendaRamais: TGroupBox;
-    Label1: TLabel;
-    JvGIFAnimator1: TJvGIFAnimator;
-    JvGIFAnimator2: TJvGIFAnimator;
-    lblUrl: TLabel;
-    grdItens: TJvDBGrid;
-    edtNome: TEdit;
     Image2: TImage;
     JvHTLabel3: TJvHTLabel;
-    BitBtn1: TBitBtn;
-    JvTabBarXPPainter1: TJvTabBarXPPainter;
     ImageList1: TImageList;
-    JvTabBarXPPainter2: TJvTabBarXPPainter;
-    TabBar: TJvTabBar;
-    PainelAniversariantes: TGroupBox;
-    Label3: TLabel;
-    BitBtn2: TBitBtn;
-    JvTabBar1: TJvTabBar;
-    JvDBGrid1: TJvDBGrid;
     cdsfoto: TGraphicField;
     cdsaniversario: TDateField;
-    JvHTLabel1: TJvHTLabel;
+    cdsReservasEm: TClientDataSet;
+    IntegerField1: TIntegerField;
+    btnSair: TJvExpressButton;
+    Panel7: TPanel;
+    Panel8: TPanel;
+    PainelAgendaRamais: TGroupBox;
+    Label1: TLabel;
     JvHTLabel2: TJvHTLabel;
+    grdItens: TJvDBGrid;
+    edtNome: TEdit;
     PainelReservarSalas: TGroupBox;
     Label2: TLabel;
-    JvGIFAnimator3: TJvGIFAnimator;
-    JvGIFAnimator4: TJvGIFAnimator;
     Label4: TLabel;
     JvHTLabel4: TJvHTLabel;
     grdReservas: TJvDBGrid;
     Edit1: TEdit;
+    PainelAniversariantes: TGroupBox;
+    Label3: TLabel;
+    JvHTLabel1: TJvHTLabel;
+    BitBtn2: TBitBtn;
+    grdListaAniversariantes: TJvDBGrid;
+    PainelBranco: TGroupBox;
+    Label6: TLabel;
     BitBtn3: TBitBtn;
-    JvTabBar2: TJvTabBar;
-    cdsReservasEm: TClientDataSet;
-    IntegerField1: TIntegerField;
+    JvTabBar1: TJvTabBar;
+    SpeedButton1: TSpeedButton;
+    PainelEdicaoContato: TGroupBox;
+    JvHTLabel5: TJvHTLabel;
+    btnSalvar: TSpeedButton;
+    TabBarContato: TJvTabBar;
+    Label8: TLabel;
+    DBEdit2: TDBEdit;
+    Label9: TLabel;
+    DBEdit3: TDBEdit;
+    Label10: TLabel;
+    DBEdit4: TDBEdit;
+    Label11: TLabel;
+    DBEdit5: TDBEdit;
+    Label12: TLabel;
+    DBEdit6: TDBEdit;
+    Label13: TLabel;
+    DBEdit7: TDBEdit;
+    Label14: TLabel;
+    DBEdit8: TDBEdit;
+    Label15: TLabel;
+    DBEdit9: TDBEdit;
+    Label16: TLabel;
+    DBEdit10: TDBEdit;
+    Label17: TLabel;
+    DBEdit11: TDBEdit;
+    Label18: TLabel;
+    DBEdit12: TDBEdit;
+    Label19: TLabel;
+    DBImage1: TDBImage;
+    Label20: TLabel;
+    DBEdit13: TDBEdit;
     procedure edtNomeChange(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure grdItensDrawColumnCell(Sender: TObject; const Rect: TRect;
       DataCol: Integer; Column: TColumn; State: TGridDrawState);
     procedure cdssetor_localGetText(Sender: TField; var Text: String;
       DisplayText: Boolean);
-    procedure BitBtn1Click(Sender: TObject);
     procedure edtNomeKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure btnMostraPainelAgendaRamaisClick(Sender: TObject);
     procedure btnMostrarAniversariantesClick(Sender: TObject);
     procedure btnReservasSalaClick(Sender: TObject);
+    procedure btnSairClick(Sender: TObject);
+    procedure TabBarContatoClick(Sender: TObject);
   private
     Host: string;
+    UrlServico: string;
     procedure loadDados();
   public
     { Public declarations }
@@ -150,7 +178,6 @@ end;
 procedure TFormAgenda.loadDados();
 var
   HostFile: string;
-  UrlServico: string;
   js: TlkJSONobject;
   json: TlkJSONlist;
   Url: string;
@@ -161,103 +188,104 @@ var
   offset: Integer;
   i, j: Integer;
 begin
-exit;
   Screen.Cursor:= crHourGlass;
   cds.DisableControls;
+  try
+    AppDir:= ExtractFilePath(Application.ExeName);
 
-  AppDir:= ExtractFilePath(Application.ExeName);
+    // Arquivo com o host
+    HostFile:= AppDir + 'host';
+    if FileExists(HostFile) then
+       Host:= ReadLine(HostFile);
 
-  // Arquivo com o host
-  HostFile:= AppDir + 'host';
-  if FileExists(HostFile) then
-     Host:= ReadLine(HostFile);
-
-  // Se o host não foi informado, pergunta para o usuário
-  if Trim(Host) = '' then
-  begin
-     Host:= 'http://servicosssi.unb.br:2301';
-     UrlServico:= Host + '/agenda/telefone';
-     if not InputQuery('Olá muito prazer', 'Informe a URL do Web Service da agenda de telefone do CPD:', UrlServico) then
-     begin
-        ShowMessage('A agenda de telefone será finalizada!');
-        Application.Terminate;
-        Exit;
-     end;
-  end
-  else
-    UrlServico:= Host + '/agenda/telefone';
-
-  // Arquivo de cache da agenda
-  DbFile:= AppDir + 'agenda.dat';
-  DbSize:= FileSize(DbFile);
-
-  // Se o arquivo de cache dos dados já existe, apenas o carrega-o
-  if DbSize > 310 then
-    cds.LoadFromFile(DbFile)
-  else
-  begin
-      // Já está preparado para carregar muitos dados com várias requisições pequenas
-      for i:= 0 to 40 do
-      begin
-        offset:= i * 5000;
-
-        // Monta a requisição e envia ao barramento
-        Url:= UrlServico + '?offset='+ IntToStr(offset);
-        try
-          Str := IdHTTP.get(Url);
-        except
-          ShowMessage('Não foi possível conectar no barramento de serviços. Verifique a conectividade!');
+    // Se o host não foi informado, pergunta para o usuário
+    if Trim(Host) = '' then
+    begin
+       Host:= 'http://servicosssi.unb.br:2301';
+       UrlServico:= Host + '/agenda/telefone';
+       if not InputQuery('Olá muito prazer', 'Informe a URL do Web Service da agenda de telefone do CPD:', UrlServico) then
+       begin
+          ShowMessage('A agenda de telefone será finalizada!');
           Application.Terminate;
           Exit;
-        end;
+       end;
+    end
+    else
+      UrlServico:= Host + '/agenda/telefone';
 
-        // parser do json
-        json := TlkJSON.ParseText(Str) as TlkJSONlist;
-        if json = nil then
-          Continue; // algum caracter estranho estragou
+    // Arquivo de cache da agenda
+    DbFile:= AppDir + 'agenda.dat';
+    DbSize:= FileSize(DbFile);
 
-        for j:= 0 to json.Count-1 do
+    // Se o arquivo de cache dos dados já existe, apenas o carrega-o
+    if DbSize > 310 then
+      cds.LoadFromFile(DbFile)
+    else
+    begin
+        // Já está preparado para carregar muitos dados com várias requisições pequenas
+        for i:= 0 to 40 do
         begin
-          js := json.Child[j] as TlkJSONobject;
-          cds.Append;
+          offset:= i * 5000;
+
+          // Monta a requisição e envia ao barramento
+          Url:= UrlServico + '?offset='+ IntToStr(offset);
           try
-            cdsid.AsInteger := js.Field['id'].Value;
-            if not VarIsNull(js.Field['matricula'].Value) then
-              cdsmatricula.AsInteger := js.Field['matricula'].Value;
-            cdsnome.AsString := VarToStr(js.Field['nome'].Value);
-            cdstelefone1.AsString := VarToStr(js.Field['telefone'].Value);
-            cdstelefone2.AsString := VarToStr(js.Field['telefone2'].Value);
-            cdsemail.AsString := VarToStr(js.Field['email'].Value);
-            cdssetor.AsString := VarToStr(js.Field['setor'].Value);
-            cdslocal.AsString := VarToStr(js.Field['local'].Value);
-            cdscargo.AsString := VarToStr(js.Field['cargo'].Value);
-            cdsramal.AsString := VarToStr(js.Field['ramal'].Value);
-            cds.Post;
+            Str := IdHTTP.get(Url);
           except
-            // Algum dado pode ter causado a exception
-            cds.Cancel;
+            ShowMessage('Não foi possível conectar no barramento de serviços. Verifique a conectividade!');
+            Application.Terminate;
+            Exit;
           end;
+
+          // parser do json
+          json := TlkJSON.ParseText(Str) as TlkJSONlist;
+          if json = nil then
+            Continue; // algum caracter estranho estragou
+
+          for j:= 0 to json.Count-1 do
+          begin
+            js := json.Child[j] as TlkJSONobject;
+            cds.Append;
+            try
+              cdsid.AsInteger := js.Field['id'].Value;
+              if not VarIsNull(js.Field['matricula'].Value) then
+                cdsmatricula.AsInteger := js.Field['matricula'].Value;
+              cdsnome.AsString := VarToStr(js.Field['nome'].Value);
+              cdstelefone1.AsString := VarToStr(js.Field['telefone'].Value);
+              cdstelefone2.AsString := VarToStr(js.Field['telefone2'].Value);
+              cdsemail.AsString := VarToStr(js.Field['email'].Value);
+              cdssetor.AsString := VarToStr(js.Field['setor'].Value);
+              cdslocal.AsString := VarToStr(js.Field['local'].Value);
+              cdscargo.AsString := VarToStr(js.Field['cargo'].Value);
+              cdsramal.AsString := VarToStr(js.Field['ramal'].Value);
+              cds.Post;
+            except
+              // Algum dado pode ter causado a exception
+              cds.Cancel;
+            end;
+          end;
+
+          // chegou ao fim ou tem mais contatos
+          if ((json.Count = 0) or (json.Count < 999)) then
+            Break;
         end;
 
-        // chegou ao fim ou tem mais contatos
-        if ((json.Count = 0) or (json.Count < 999)) then
-          Break;
-      end;
-
-      // Salva a agenda para trabalhar offline
-      try
-        cds.SaveToFile(DbFile);
-      except
-        // Não tem permissão para gravar no disco
-      end;
+        // Salva a agenda para trabalhar offline
+        try
+          cds.SaveToFile(DbFile);
+        except
+          // Não tem permissão para gravar no disco
+        end;
+    end;
+    SetFileAttributes(PAnsiChar(HostFile), 2);
+    SetFileAttributes(PAnsiChar(DbFile), 2);
+    StringToFile(HostFile, Host, False);
+    StatusBar.Panels[1].Text:= 'Barramento: '+ UrlServico;
+    ActiveControl:= edtNome;
+  finally
+    cds.EnableControls;
+    Screen.Cursor:= crDefault;
   end;
-  cds.EnableControls;
-  SetFileAttributes(PAnsiChar(HostFile), 2);
-  SetFileAttributes(PAnsiChar(DbFile), 2);
-  StringToFile(HostFile, Host, False);
-  StatusBar.Panels[1].Text:= 'Barramento: '+ UrlServico;
-  ActiveControl:= edtNome;
-  Screen.Cursor:= crDefault;
 end;
 
 procedure TFormAgenda.edtNomeChange(Sender: TObject);
@@ -272,18 +300,22 @@ begin
     cds.FilterOptions:= [foCaseInsensitive];
     cds.Filter := 'nome like ' + QuotedStr('%' + edtNome.Text + '%');
     cds.Filtered:= True;
-    lblUrl.Caption:= Host + '/agenda/telefone?filter="{ "nome__contains" : "'+ edtNome.Text + '" }"';
-    lblUrl.Show;
+    StatusBar.Panels[1].Text:= 'Barramento: '+ UrlServico + '?filter="{ "nome__contains" : "'+ edtNome.Text + '" }"';
     cds.EnableControls;
   end
   else
   begin
-    lblUrl.Hide;
+    StatusBar.Panels[1].Text:= 'Barramento: '+ UrlServico
   end;
 end;
 
 procedure TFormAgenda.FormShow(Sender: TObject);
 begin
+  PainelReservarSalas.Hide;
+  PainelAniversariantes.Hide;
+  PainelEdicaoContato.Hide;
+  PainelEdicaoContato.Hide;
+  PainelAgendaRamais.Show;
   PainelAgendaRamais.BringToFront;
   loadDados();
 end;
@@ -319,11 +351,6 @@ begin
   Text:= cdssetor.AsString + '  ' + cdslocal.AsString; 
 end;
 
-procedure TFormAgenda.BitBtn1Click(Sender: TObject);
-begin
-  Application.Terminate;
-end;
-
 procedure TFormAgenda.edtNomeKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
@@ -333,18 +360,54 @@ end;
 
 procedure TFormAgenda.btnMostraPainelAgendaRamaisClick(Sender: TObject);
 begin
+  TabBarContato.Show;
+  TabBarContato.Tabs[0].Selected:= True;
+  PainelAniversariantes.Hide;
+  PainelReservarSalas.Hide;
+  PainelAgendaRamais.Show;
   PainelAgendaRamais.BringToFront;
 end;
 
 procedure TFormAgenda.btnMostrarAniversariantesClick(Sender: TObject);
 begin
+  TabBarContato.Hide;
+  PainelAniversariantes.Show;
+  PainelReservarSalas.Hide;
+  PainelAgendaRamais.Hide;
+  PainelEdicaoContato.Hide;
   PainelAniversariantes.BringToFront;
-  
 end;
 
 procedure TFormAgenda.btnReservasSalaClick(Sender: TObject);
 begin
+  TabBarContato.Hide;
+  PainelAniversariantes.Hide;
+  PainelReservarSalas.Show;
+  PainelAgendaRamais.Hide;
+  PainelEdicaoContato.Hide;
   PainelReservarSalas.BringToFront;
+end;
+
+procedure TFormAgenda.btnSairClick(Sender: TObject);
+begin
+   if Application.MessageBox('Você tem certeza que deseja sair?', PChar(Application.Title), MB_OKCANCEL) = mrOk then
+    Application.Terminate;
+end;
+
+procedure TFormAgenda.TabBarContatoClick(Sender: TObject);
+begin
+  if TabBarContato.Tabs[0].Selected then
+  begin
+    PainelAgendaRamais.Show;
+    PainelEdicaoContato.Hide;
+    PainelAgendaRamais.BringToFront;
+  end
+  else
+  begin
+    PainelAgendaRamais.Hide;
+    PainelEdicaoContato.Show;
+    PainelEdicaoContato.BringToFront;
+  end;
 end;
 
 end.
