@@ -115,10 +115,14 @@ type
     procedure btnReservasSalaClick(Sender: TObject);
     procedure btnSairClick(Sender: TObject);
     procedure TabBarContatoClick(Sender: TObject);
+    procedure btnSalvarClick(Sender: TObject);
   private
     Host: string;
     UrlServico: string;
     procedure loadDados();
+    function RecordToJson(): TStringList;
+    procedure SendPostRequest(const Json: TStringList);
+    procedure SendPutRequest(const Json: TStringList; id: Integer);
   public
     { Public declarations }
   end;
@@ -409,5 +413,50 @@ begin
     PainelEdicaoContato.BringToFront;
   end;
 end;
+
+procedure TFormAgenda.btnSalvarClick(Sender: TObject);
+var
+  JsonRecord: TStringList;
+begin
+  JsonRecord:= RecordToJson();
+  if cdsid.IsNull then
+    SendPostRequest(JsonRecord)
+  else
+    SendPutRequest(JsonRecord, cdsid.AsInteger);
+end;
+
+function TFormAgenda.RecordToJson(): TStringList;
+var
+  Field: TField;
+  FieldCount: Integer;
+  i: Integer;
+begin
+  Result:= TStringList.Create;
+  FieldCount:= cds.FieldCount;
+  Result.Append('{');
+  for i:= 0 to FieldCount-1 do
+  begin
+    Field:= cds.Fields[i];
+    Result.Append(QuotedStr(Field.FieldName) + ':' + QuotedStr(Field.AsString));
+    if (i < FieldCount-1) then
+    begin
+      Result.Append(',');
+    end;
+  end;
+  Result.Append('}');
+end;
+
+procedure TFormAgenda.SendPostRequest(const Json: TStringList);
+begin
+  IdHTTP.Post(UrlServico, Json);
+end;
+
+
+procedure TFormAgenda.SendPutRequest(const Json: TStringList; id: Integer);
+begin
+
+end;
+
+
 
 end.

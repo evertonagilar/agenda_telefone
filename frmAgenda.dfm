@@ -973,6 +973,7 @@ object FormAgenda: TFormAgenda
         93337FFFF7737777733300000033333333337777773333333333}
       NumGlyphs = 2
       Transparent = False
+      OnClick = btnSalvarClick
     end
     object Label8: TLabel
       Left = 10

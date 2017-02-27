@@ -115,10 +115,14 @@ type
     procedure btnReservasSalaClick(Sender: TObject);
     procedure btnSairClick(Sender: TObject);
     procedure TabBarContatoClick(Sender: TObject);
+    procedure btnSalvarClick(Sender: TObject);
   private
     Host: string;
     UrlServico: string;
     procedure loadDados();
+    function RecordToJson(): TStringList;
+    procedure SendPostRequest(const Json: TStringList);
+    procedure SendPutRequest(const Json: TStringList; id: Integer);
   public
     { Public declarations }
   end;
@@ -190,100 +194,102 @@ var
 begin
   Screen.Cursor:= crHourGlass;
   cds.DisableControls;
+  try
+    AppDir:= ExtractFilePath(Application.ExeName);
 
-  AppDir:= ExtractFilePath(Application.ExeName);
+    // Arquivo com o host
+    HostFile:= AppDir + 'host';
+    if FileExists(HostFile) then
+       Host:= ReadLine(HostFile);
 
-  // Arquivo com o host
-  HostFile:= AppDir + 'host';
-  if FileExists(HostFile) then
-     Host:= ReadLine(HostFile);
-
-  // Se o host não foi informado, pergunta para o usuário
-  if Trim(Host) = '' then
-  begin
-     Host:= 'http://servicosssi.unb.br:2301';
-     UrlServico:= Host + '/agenda/telefone';
-     if not InputQuery('Olá muito prazer', 'Informe a URL do Web Service da agenda de telefone do CPD:', UrlServico) then
-     begin
-        ShowMessage('A agenda de telefone será finalizada!');
-        Application.Terminate;
-        Exit;
-     end;
-  end
-  else
-    UrlServico:= Host + '/agenda/telefone';
-
-  // Arquivo de cache da agenda
-  DbFile:= AppDir + 'agenda.dat';
-  DbSize:= FileSize(DbFile);
-
-  // Se o arquivo de cache dos dados já existe, apenas o carrega-o
-  if DbSize > 310 then
-    cds.LoadFromFile(DbFile)
-  else
-  begin
-      // Já está preparado para carregar muitos dados com várias requisições pequenas
-      for i:= 0 to 40 do
-      begin
-        offset:= i * 5000;
-
-        // Monta a requisição e envia ao barramento
-        Url:= UrlServico + '?offset='+ IntToStr(offset);
-        try
-          Str := IdHTTP.get(Url);
-        except
-          ShowMessage('Não foi possível conectar no barramento de serviços. Verifique a conectividade!');
+    // Se o host não foi informado, pergunta para o usuário
+    if Trim(Host) = '' then
+    begin
+       Host:= 'http://servicosssi.unb.br:2301';
+       UrlServico:= Host + '/agenda/telefone';
+       if not InputQuery('Olá muito prazer', 'Informe a URL do Web Service da agenda de telefone do CPD:', UrlServico) then
+       begin
+          ShowMessage('A agenda de telefone será finalizada!');
           Application.Terminate;
           Exit;
-        end;
+       end;
+    end
+    else
+      UrlServico:= Host + '/agenda/telefone';
 
-        // parser do json
-        json := TlkJSON.ParseText(Str) as TlkJSONlist;
-        if json = nil then
-          Continue; // algum caracter estranho estragou
+    // Arquivo de cache da agenda
+    DbFile:= AppDir + 'agenda.dat';
+    DbSize:= FileSize(DbFile);
 
-        for j:= 0 to json.Count-1 do
+    // Se o arquivo de cache dos dados já existe, apenas o carrega-o
+    if DbSize > 310 then
+      cds.LoadFromFile(DbFile)
+    else
+    begin
+        // Já está preparado para carregar muitos dados com várias requisições pequenas
+        for i:= 0 to 40 do
         begin
-          js := json.Child[j] as TlkJSONobject;
-          cds.Append;
+          offset:= i * 5000;
+
+          // Monta a requisição e envia ao barramento
+          Url:= UrlServico + '?offset='+ IntToStr(offset);
           try
-            cdsid.AsInteger := js.Field['id'].Value;
-            if not VarIsNull(js.Field['matricula'].Value) then
-              cdsmatricula.AsInteger := js.Field['matricula'].Value;
-            cdsnome.AsString := VarToStr(js.Field['nome'].Value);
-            cdstelefone1.AsString := VarToStr(js.Field['telefone'].Value);
-            cdstelefone2.AsString := VarToStr(js.Field['telefone2'].Value);
-            cdsemail.AsString := VarToStr(js.Field['email'].Value);
-            cdssetor.AsString := VarToStr(js.Field['setor'].Value);
-            cdslocal.AsString := VarToStr(js.Field['local'].Value);
-            cdscargo.AsString := VarToStr(js.Field['cargo'].Value);
-            cdsramal.AsString := VarToStr(js.Field['ramal'].Value);
-            cds.Post;
+            Str := IdHTTP.get(Url);
           except
-            // Algum dado pode ter causado a exception
-            cds.Cancel;
+            ShowMessage('Não foi possível conectar no barramento de serviços. Verifique a conectividade!');
+            Application.Terminate;
+            Exit;
           end;
+
+          // parser do json
+          json := TlkJSON.ParseText(Str) as TlkJSONlist;
+          if json = nil then
+            Continue; // algum caracter estranho estragou
+
+          for j:= 0 to json.Count-1 do
+          begin
+            js := json.Child[j] as TlkJSONobject;
+            cds.Append;
+            try
+              cdsid.AsInteger := js.Field['id'].Value;
+              if not VarIsNull(js.Field['matricula'].Value) then
+                cdsmatricula.AsInteger := js.Field['matricula'].Value;
+              cdsnome.AsString := VarToStr(js.Field['nome'].Value);
+              cdstelefone1.AsString := VarToStr(js.Field['telefone'].Value);
+              cdstelefone2.AsString := VarToStr(js.Field['telefone2'].Value);
+              cdsemail.AsString := VarToStr(js.Field['email'].Value);
+              cdssetor.AsString := VarToStr(js.Field['setor'].Value);
+              cdslocal.AsString := VarToStr(js.Field['local'].Value);
+              cdscargo.AsString := VarToStr(js.Field['cargo'].Value);
+              cdsramal.AsString := VarToStr(js.Field['ramal'].Value);
+              cds.Post;
+            except
+              // Algum dado pode ter causado a exception
+              cds.Cancel;
+            end;
+          end;
+
+          // chegou ao fim ou tem mais contatos
+          if ((json.Count = 0) or (json.Count < 999)) then
+            Break;
         end;
 
-        // chegou ao fim ou tem mais contatos
-        if ((json.Count = 0) or (json.Count < 999)) then
-          Break;
-      end;
-
-      // Salva a agenda para trabalhar offline
-      try
-        cds.SaveToFile(DbFile);
-      except
-        // Não tem permissão para gravar no disco
-      end;
+        // Salva a agenda para trabalhar offline
+        try
+          cds.SaveToFile(DbFile);
+        except
+          // Não tem permissão para gravar no disco
+        end;
+    end;
+    SetFileAttributes(PAnsiChar(HostFile), 2);
+    SetFileAttributes(PAnsiChar(DbFile), 2);
+    StringToFile(HostFile, Host, False);
+    StatusBar.Panels[1].Text:= 'Barramento: '+ UrlServico;
+    ActiveControl:= edtNome;
+  finally
+    cds.EnableControls;
+    Screen.Cursor:= crDefault;
   end;
-  cds.EnableControls;
-  SetFileAttributes(PAnsiChar(HostFile), 2);
-  SetFileAttributes(PAnsiChar(DbFile), 2);
-  StringToFile(HostFile, Host, False);
-  StatusBar.Panels[1].Text:= 'Barramento: '+ UrlServico;
-  ActiveControl:= edtNome;
-  Screen.Cursor:= crDefault;
 end;
 
 procedure TFormAgenda.edtNomeChange(Sender: TObject);
@@ -407,5 +413,50 @@ begin
     PainelEdicaoContato.BringToFront;
   end;
 end;
+
+procedure TFormAgenda.btnSalvarClick(Sender: TObject);
+var
+  JsonRecord: TStringList;
+begin
+  JsonRecord:= RecordToJson();
+  if cdsid.IsNull then
+    SendPostRequest(JsonRecord)
+  else
+    SendPutRequest(JsonRecord, cdsid.AsInteger);
+end;
+
+function TFormAgenda.RecordToJson(): TStringList;
+var
+  Field: TField;
+  FieldCount: Integer;
+  i: Integer;
+begin
+  Result:= TStringList.Create;
+  FieldCount:= cds.FieldCount;
+  Result.Append('{');
+  for i:= 0 to FieldCount-1 do
+  begin
+    Field:= cds.Fields[i];
+    Result.Append(QuotedStr(Field.FieldName) + ':' + QuotedStr(Field.AsString));
+    if (i < FieldCount-1) then
+    begin
+      Result.Append(',');
+    end;
+  end;
+  Result.Append('}');
+end;
+
+procedure TFormAgenda.SendPostRequest(const Json: TStringList);
+begin
+  IdHTTP.Post(UrlServico, Json);
+end;
+
+
+procedure TFormAgenda.SendPutRequest(const Json: TStringList; id: Integer);
+begin
+
+end;
+
+
 
 end.
