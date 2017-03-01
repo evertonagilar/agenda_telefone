@@ -4,104 +4,71 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  DBClient, Buttons, jpeg, ExtCtrls, JvExStdCtrls, JvExExtCtrls,
-  JvExtComponent, uLkJSON, ComCtrls, JvExComCtrls, pngimage,
-  IdBaseComponent, IdComponent, IdTCPConnection, IdHTTP,
-  IdTCPClient, JvHtControls, JvAnimatedImage, JvGIFCtrl, JvExControls, DB,
-  StdCtrls, Grids, DBGrids, JvExDBGrids, JvDBGrid, Dialogs, JvLookOut,
-  JvAnimate, JvNetscapeSplitter, ImgList, JvImageList, JvTabBar,
-  JvTabBarXPPainter, JvImageRotate, JvExForms, JvBaseThumbnail,
-  JvThumbViews, Mask, DBCtrls;
+  Data.DB, System.ImageList, Vcl.ImgList, IdBaseComponent, IdComponent,
+  IdTCPConnection, IdTCPClient, IdHTTP, Datasnap.DBClient, Vcl.DBCtrls,
+  Vcl.Mask, Vcl.Buttons, Vcl.ComCtrls, Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.Grids,
+  Vcl.DBGrids, uLkJSON, Dialogs, Vcl.Imaging.pngimage, IdAuthentication, JPeg;
 
 type
   TFormAgenda = class(TForm)
     cds: TClientDataSet;
-    cdsnome: TStringField;
-    cdstelefone1: TStringField;
-    cdsramal: TStringField;
-    DataSource1: TDataSource;
-    Panel1: TPanel;
-    Panel2: TPanel;
-    Panel3: TPanel;
-    Panel4: TPanel;
-    Panel5: TPanel;
-    Panel6: TPanel;
+    ds: TDataSource;
     StatusBar: TStatusBar;
-    cdstelefone2: TStringField;
+    IdHTTP: TIdHTTP;
+    ImageList1: TImageList;
+    cdsReservasEm: TClientDataSet;
+    IntegerField1: TIntegerField;
+    PageControl1: TPageControl;
+    tabAgenda: TTabSheet;
+    tabContato: TTabSheet;
+    JvHTLabel2: TLabel;
+    Label1: TLabel;
+    edtNome: TEdit;
+    btnNovoContato: TSpeedButton;
+    grdItens: TDBGrid;
+    lblState: TLabel;
+    Label8: TLabel;
+    Label9: TLabel;
+    Label10: TLabel;
+    Label11: TLabel;
+    Label12: TLabel;
+    Label13: TLabel;
+    Label14: TLabel;
+    Label15: TLabel;
+    Label16: TLabel;
+    edtMatricula: TDBEdit;
+    edtNomeContato: TDBEdit;
+    edtTelefone: TDBEdit;
+    edtCelular: TDBEdit;
+    edtRamal: TDBEdit;
+    edtSetor: TDBEdit;
+    edtCargo: TDBEdit;
+    edtAdmissao: TDBEdit;
+    edtEmail: TDBEdit;
+    Image1: TImage;
+    btnSalvarContato: TSpeedButton;
+    DBCheckBox1: TDBCheckBox;
+    Label2: TLabel;
+    edtLocal: TDBEdit;
+    cdsid: TIntegerField;
+    cdsmatricula: TStringField;
+    cdsnome: TStringField;
+    cdstelefone: TStringField;
+    cdscelular: TStringField;
+    cdsramal: TStringField;
     cdssetor: TStringField;
     cdscargo: TStringField;
-    cdsmatricula: TIntegerField;
-    cdsid: TIntegerField;
     cdsadmissao: TDateTimeField;
     cdsemail: TStringField;
     cdslocal: TStringField;
-    cdssetor_local: TStringField;
-    IdHTTP: TIdHTTP;
-    JvExpress1: TJvExpress;
-    btnMostraPainelAgendaRamais: TJvExpressButton;
-    btnMostrarAniversariantes: TJvExpressButton;
-    btnReservasSala: TJvExpressButton;
-    Image2: TImage;
-    JvHTLabel3: TJvHTLabel;
-    ImageList1: TImageList;
     cdsfoto: TGraphicField;
     cdsaniversario: TDateField;
-    cdsReservasEm: TClientDataSet;
-    IntegerField1: TIntegerField;
-    btnSair: TJvExpressButton;
-    Panel7: TPanel;
-    Panel8: TPanel;
-    PainelAgendaRamais: TGroupBox;
-    Label1: TLabel;
-    JvHTLabel2: TJvHTLabel;
-    grdItens: TJvDBGrid;
-    edtNome: TEdit;
-    PainelReservarSalas: TGroupBox;
-    Label2: TLabel;
-    Label4: TLabel;
-    JvHTLabel4: TJvHTLabel;
-    grdReservas: TJvDBGrid;
-    Edit1: TEdit;
-    PainelAniversariantes: TGroupBox;
-    Label3: TLabel;
-    JvHTLabel1: TJvHTLabel;
-    BitBtn2: TBitBtn;
-    grdListaAniversariantes: TJvDBGrid;
-    PainelBranco: TGroupBox;
-    Label6: TLabel;
-    BitBtn3: TBitBtn;
-    JvTabBar1: TJvTabBar;
-    SpeedButton1: TSpeedButton;
-    PainelEdicaoContato: TGroupBox;
-    JvHTLabel5: TJvHTLabel;
-    btnSalvar: TSpeedButton;
-    TabBarContato: TJvTabBar;
-    Label8: TLabel;
-    DBEdit2: TDBEdit;
-    Label9: TLabel;
-    DBEdit3: TDBEdit;
-    Label10: TLabel;
-    DBEdit4: TDBEdit;
-    Label11: TLabel;
-    DBEdit5: TDBEdit;
-    Label12: TLabel;
-    DBEdit6: TDBEdit;
-    Label13: TLabel;
-    DBEdit7: TDBEdit;
-    Label14: TLabel;
-    DBEdit8: TDBEdit;
-    Label15: TLabel;
-    DBEdit9: TDBEdit;
-    Label16: TLabel;
-    DBEdit10: TDBEdit;
-    Label17: TLabel;
-    DBEdit11: TDBEdit;
-    Label18: TLabel;
-    DBEdit12: TDBEdit;
-    Label19: TLabel;
-    DBImage1: TDBImage;
-    Label20: TLabel;
-    DBEdit13: TDBEdit;
+    cdsvisitante: TBooleanField;
+    cdscoordenador: TBooleanField;
+    cdssetor_local: TStringField;
+    GroupBox1: TGroupBox;
+    imgFoto: TImage;
+    btnCaptura: TButton;
     procedure edtNomeChange(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure grdItensDrawColumnCell(Sender: TObject; const Rect: TRect;
@@ -110,20 +77,28 @@ type
       DisplayText: Boolean);
     procedure edtNomeKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure btnMostraPainelAgendaRamaisClick(Sender: TObject);
-    procedure btnMostrarAniversariantesClick(Sender: TObject);
-    procedure btnReservasSalaClick(Sender: TObject);
     procedure btnSairClick(Sender: TObject);
-    procedure TabBarContatoClick(Sender: TObject);
-    procedure btnSalvarClick(Sender: TObject);
+    procedure btnNovoContatoClick(Sender: TObject);
+    procedure btnSalvarContatoClick(Sender: TObject);
+    procedure grdItensDblClick(Sender: TObject);
+    procedure PageControl1Change(Sender: TObject);
+    procedure cdsramalChange(Sender: TField);
+    procedure edtRamalKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure btnCapturaClick(Sender: TObject);
   private
+    HostFile: string;
     Host: string;
     UrlServico: string;
+    AppDir: string;
+    DbFile: string;
     procedure loadDados();
-    function RecordToJson(): TStringList;
-    procedure SendPostRequest(const Json: TStringList);
-    procedure SendPutRequest(const Json: TStringList; id: Integer);
-  public
+    function RecordToJson(): string;
+    procedure SendPostRequest(const Json: string);
+    procedure SendPutRequest(const Json: string; id: Integer);
+    function GetRequest(const Url: string): string;
+    procedure ValidaContato();
+    public
     { Public declarations }
   end;
 
@@ -132,7 +107,19 @@ var
 
 implementation
 
+uses CapturaCam;
+
 {$R *.dfm}
+
+function IsDateValid(const Value: string): Boolean;
+begin
+  try
+      StrToDate(Value);
+      Result:= True;
+  except
+    Result:= False;
+  end;
+end;
 
 function FileSize(const fileName : wideString) : Int64;
 var
@@ -186,61 +173,22 @@ var
   json: TlkJSONlist;
   Url: string;
   Str : string;
-  DbFile: string;
-  AppDir: string;
-  DbSize: Integer;
   offset: Integer;
   i, j: Integer;
 begin
   Screen.Cursor:= crHourGlass;
   cds.DisableControls;
   try
-    AppDir:= ExtractFilePath(Application.ExeName);
+      // Já está preparado para carregar muitos dados com várias requisições pequenas
+      for i:= 0 to 40 do
+      begin
+        offset:= i * 5000;
 
-    // Arquivo com o host
-    HostFile:= AppDir + 'host';
-    if FileExists(HostFile) then
-       Host:= ReadLine(HostFile);
-
-    // Se o host não foi informado, pergunta para o usuário
-    if Trim(Host) = '' then
-    begin
-       Host:= 'http://servicosssi.unb.br:2301';
-       UrlServico:= Host + '/agenda/telefone';
-       if not InputQuery('Olá muito prazer', 'Informe a URL do Web Service da agenda de telefone do CPD:', UrlServico) then
-       begin
-          ShowMessage('A agenda de telefone será finalizada!');
-          Application.Terminate;
-          Exit;
-       end;
-    end
-    else
-      UrlServico:= Host + '/agenda/telefone';
-
-    // Arquivo de cache da agenda
-    DbFile:= AppDir + 'agenda.dat';
-    DbSize:= FileSize(DbFile);
-
-    // Se o arquivo de cache dos dados já existe, apenas o carrega-o
-    if DbSize > 310 then
-      cds.LoadFromFile(DbFile)
-    else
-    begin
-        // Já está preparado para carregar muitos dados com várias requisições pequenas
-        for i:= 0 to 40 do
+        // Monta a requisição e envia ao barramento
+        Url:= UrlServico + '?offset='+ IntToStr(offset);
+        Str := GetRequest(Url);
+        if (Str <> '') then
         begin
-          offset:= i * 5000;
-
-          // Monta a requisição e envia ao barramento
-          Url:= UrlServico + '?offset='+ IntToStr(offset);
-          try
-            Str := IdHTTP.get(Url);
-          except
-            ShowMessage('Não foi possível conectar no barramento de serviços. Verifique a conectividade!');
-            Application.Terminate;
-            Exit;
-          end;
-
           // parser do json
           json := TlkJSON.ParseText(Str) as TlkJSONlist;
           if json = nil then
@@ -252,16 +200,18 @@ begin
             cds.Append;
             try
               cdsid.AsInteger := js.Field['id'].Value;
-              if not VarIsNull(js.Field['matricula'].Value) then
-                cdsmatricula.AsInteger := js.Field['matricula'].Value;
+              cdsmatricula.AsString := VarToStr(js.Field['matricula'].Value);
               cdsnome.AsString := VarToStr(js.Field['nome'].Value);
-              cdstelefone1.AsString := VarToStr(js.Field['telefone'].Value);
-              cdstelefone2.AsString := VarToStr(js.Field['telefone2'].Value);
+              cdstelefone.AsString := VarToStr(js.Field['telefone'].Value);
+              cdscelular.AsString := VarToStr(js.Field['celular'].Value);
               cdsemail.AsString := VarToStr(js.Field['email'].Value);
               cdssetor.AsString := VarToStr(js.Field['setor'].Value);
               cdslocal.AsString := VarToStr(js.Field['local'].Value);
               cdscargo.AsString := VarToStr(js.Field['cargo'].Value);
               cdsramal.AsString := VarToStr(js.Field['ramal'].Value);
+              cdsadmissao.AsDateTime:= StrToDate(VarToStr(js.Field['admissao'].Value));
+              cdsvisitante.AsBoolean := js.Field['visitante'].Value;
+              cdscoordenador.AsBoolean:= False;
               cds.Post;
             except
               // Algum dado pode ter causado a exception
@@ -272,23 +222,38 @@ begin
           // chegou ao fim ou tem mais contatos
           if ((json.Count = 0) or (json.Count < 999)) then
             Break;
-        end;
+        end
+        else
+          Break;
+      end;
 
-        // Salva a agenda para trabalhar offline
-        try
-          cds.SaveToFile(DbFile);
-        except
-          // Não tem permissão para gravar no disco
-        end;
+    // Salva a agenda para trabalhar offline
+    try
+      cds.SaveToFile(DbFile);
+    except
+      // Não tem permissão para gravar no disco
     end;
-    SetFileAttributes(PAnsiChar(HostFile), 2);
-    SetFileAttributes(PAnsiChar(DbFile), 2);
-    StringToFile(HostFile, Host, False);
-    StatusBar.Panels[1].Text:= 'Barramento: '+ UrlServico;
-    ActiveControl:= edtNome;
   finally
     cds.EnableControls;
     Screen.Cursor:= crDefault;
+  end;
+end;
+
+procedure TFormAgenda.PageControl1Change(Sender: TObject);
+begin
+  if PageControl1.ActivePage = tabAgenda then
+  begin
+    if ds.State in [dsEdit, dsInsert] then
+      cds.Cancel;
+    ActiveControl:= edtNome;
+  end
+  else
+  begin
+    ActiveControl:= edtMatricula;
+    if ds.State = dsInsert then
+      lblState.Caption:= 'Novo Contato'
+    else
+      lblState.Caption:= 'Dados do Contato';
   end;
 end;
 
@@ -309,19 +274,48 @@ begin
   end
   else
   begin
+    cds.Filtered:= False;
     StatusBar.Panels[1].Text:= 'Barramento: '+ UrlServico
   end;
 end;
 
 procedure TFormAgenda.FormShow(Sender: TObject);
 begin
-  PainelReservarSalas.Hide;
-  PainelAniversariantes.Hide;
-  PainelEdicaoContato.Hide;
-  PainelEdicaoContato.Hide;
-  PainelAgendaRamais.Show;
-  PainelAgendaRamais.BringToFront;
+  AppDir:= ExtractFilePath(Application.ExeName);
+
+  // Arquivo com o host
+  HostFile:= AppDir + 'host';
+  if FileExists(HostFile) then
+     Host:= ReadLine(HostFile);
+
+  // Se o host não foi informado, pergunta para o usuário
+  if Trim(Host) = '' then
+  begin
+     Host:= 'http://servicosssi.unb.br:2301';
+     UrlServico:= Host + '/administrativo/informacoes';
+     if not InputQuery('Olá muito prazer', 'Informe a URL do Web Service da agenda de telefone do CPD:', UrlServico) then
+     begin
+        ShowMessage('A agenda de telefone será finalizada!');
+        Application.Terminate;
+        Exit;
+     end;
+  end
+  else
+    UrlServico:= Host + '/administrativo/informacoes';
+
+  DbFile:= AppDir + 'agenda.dat';
+  PageControl1.ActivePage:= tabAgenda;
   loadDados();
+  SetFileAttributes(PWideChar(HostFile), 2);
+  SetFileAttributes(PWideChar(DbFile), 2);
+  StringToFile(HostFile, Host, False);
+  StatusBar.Panels[1].Text:= 'Barramento: '+ UrlServico;
+  ActiveControl:= edtNome;
+end;
+
+procedure TFormAgenda.grdItensDblClick(Sender: TObject);
+begin
+  PageControl1.ActivePage:= tabContato;
 end;
 
 procedure TFormAgenda.grdItensDrawColumnCell(Sender: TObject;
@@ -349,10 +343,34 @@ begin
   end;
 end;
 
+procedure TFormAgenda.cdsramalChange(Sender: TField);
+var
+  ramal: string;
+begin
+  ramal:= cdsramal.AsString;
+  if Length(ramal) = 1 then
+    ramal:= '7000'+ ramal
+  else if Length(ramal) = 2 then
+    ramal:= '700'+ ramal
+  else if Length(ramal) = 3 then
+    ramal:= '70'+ ramal
+  else if Length(ramal) = 4 then
+    ramal:= '7'+ ramal;
+  if cdsramal.AsString <> ramal then
+  begin
+    cdsramal.OnChange:= nil;
+    cdsramal.AsString:= ramal;
+    cdsramal.OnChange:= cdsramalChange;
+  end;
+end;
+
 procedure TFormAgenda.cdssetor_localGetText(Sender: TField; var Text: String;
   DisplayText: Boolean);
 begin
-  Text:= cdssetor.AsString + '  ' + cdslocal.AsString; 
+  if cdssetor.AsString = cdslocal.AsString then
+    Text:= cdssetor.AsString
+  else
+    Text:= cdssetor.AsString + ' - ' + cdslocal.AsString;
 end;
 
 procedure TFormAgenda.edtNomeKeyDown(Sender: TObject; var Key: Word;
@@ -362,34 +380,73 @@ begin
     grdItens.SetFocus;
 end;
 
-procedure TFormAgenda.btnMostraPainelAgendaRamaisClick(Sender: TObject);
+procedure TFormAgenda.edtRamalKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
 begin
-  TabBarContato.Show;
-  TabBarContato.Tabs[0].Selected:= True;
-  PainelAniversariantes.Hide;
-  PainelReservarSalas.Hide;
-  PainelAgendaRamais.Show;
-  PainelAgendaRamais.BringToFront;
+  if not Key in [0..9] then
+    Key:= 0;
 end;
 
-procedure TFormAgenda.btnMostrarAniversariantesClick(Sender: TObject);
+procedure TFormAgenda.btnCapturaClick(Sender: TObject);
+var
+  DirNomeFoto: string;
+  NomeFoto: string;
+  procedure ConverteParaJpeg(ACaminhoFoto: string);
+  var
+    cjBmp: TBitmap;
+    cjJpg: TJpegImage;
+    strNomeSemExtensao: string;
+    AFoto: TImage;
+  begin
+    AFoto:= TImage.Create(Self);
+    AFoto.Parent := Self;
+    AFoto.Visible := False;
+    AFoto.Picture.Bitmap.LoadFromFile(ACaminhoFoto + '.bmp');
+
+    cjJpg := TJPegImage.Create;
+    cjBmp := TBitmap.Create;
+
+    cjBmp.Assign(AFoto.Picture.Bitmap);
+    cjJpg.Assign(cjBMP);
+
+    cjJpg.SaveToFile(ACaminhoFoto + '.jpg');
+    DeleteFile(ACaminhoFoto + '.bmp');
+    cjJpg.Free;
+    cjBmp.Free;
+    AFoto.Free;
+  end;
 begin
-  TabBarContato.Hide;
-  PainelAniversariantes.Show;
-  PainelReservarSalas.Hide;
-  PainelAgendaRamais.Hide;
-  PainelEdicaoContato.Hide;
-  PainelAniversariantes.BringToFront;
+  fCaptura := TfCaptura.Create(Self);
+  try
+    with fCaptura, camCamera do
+    begin
+      DirNomeFoto := ExtractFilePath(Application.ExeName) + cdsmatricula.AsString + '.bmp';
+      NomeFoto := ExtractFilePath(DirNomeFoto) +
+        Copy(ExtractFileName(DirNomeFoto),1, Length(ExtractFileName(DirNomeFoto))-4);
+      FichierImage := ExtractFileName(DirNomeFoto);
+      if fCaptura.ShowModal = mrOk then
+      begin
+        CaptureImageDisque;
+        ConverteParaJpeg(NomeFoto);
+        //cdsfoto('FOTO').AsString := NomeFoto + '.jpg';
+      end;
+    end;
+  finally
+    FreeAndNil(fCaptura);
+  end;
 end;
 
-procedure TFormAgenda.btnReservasSalaClick(Sender: TObject);
+procedure TFormAgenda.btnNovoContatoClick(Sender: TObject);
 begin
-  TabBarContato.Hide;
-  PainelAniversariantes.Hide;
-  PainelReservarSalas.Show;
-  PainelAgendaRamais.Hide;
-  PainelEdicaoContato.Hide;
-  PainelReservarSalas.BringToFront;
+  tabContato.Show;
+  if ds.State in [dsEdit, dsInsert] then
+    cds.Cancel;
+  cds.Append;
+  cdsadmissao.AsDateTime:= Date;
+  cdsvisitante.AsBoolean:= False;
+  cdscoordenador.AsBoolean:= False;
+  lblState.Caption:= 'Novo Contato';
+  ActiveControl:= edtMatricula;
 end;
 
 procedure TFormAgenda.btnSairClick(Sender: TObject);
@@ -398,65 +455,167 @@ begin
     Application.Terminate;
 end;
 
-procedure TFormAgenda.TabBarContatoClick(Sender: TObject);
+procedure TFormAgenda.btnSalvarContatoClick(Sender: TObject);
+var
+  JsonRecord: string;
 begin
-  if TabBarContato.Tabs[0].Selected then
+  SelectNext(ActiveControl, True, True);
+  ValidaContato;
+  JsonRecord:= RecordToJson();
+  if ds.State in [dsEdit, dsInsert] then
+    cds.Post;
+  if (JsonRecord <> '') and (JsonRecord <> '{}') then
   begin
-    PainelAgendaRamais.Show;
-    PainelEdicaoContato.Hide;
-    PainelAgendaRamais.BringToFront;
-  end
-  else
-  begin
-    PainelAgendaRamais.Hide;
-    PainelEdicaoContato.Show;
-    PainelEdicaoContato.BringToFront;
+    if cdsid.IsNull then
+      SendPostRequest(JsonRecord)
+    else
+      SendPutRequest(JsonRecord, cdsid.AsInteger);
   end;
 end;
 
-procedure TFormAgenda.btnSalvarClick(Sender: TObject);
-var
-  JsonRecord: TStringList;
-begin
-  JsonRecord:= RecordToJson();
-  if cdsid.IsNull then
-    SendPostRequest(JsonRecord)
-  else
-    SendPutRequest(JsonRecord, cdsid.AsInteger);
-end;
-
-function TFormAgenda.RecordToJson(): TStringList;
+function TFormAgenda.RecordToJson(): string;
 var
   Field: TField;
   FieldCount: Integer;
+  SkipFields: Integer;
   i: Integer;
 begin
-  Result:= TStringList.Create;
+  Result:= '{';
   FieldCount:= cds.FieldCount;
-  Result.Append('{');
   for i:= 0 to FieldCount-1 do
   begin
     Field:= cds.Fields[i];
-    Result.Append(QuotedStr(Field.FieldName) + ':' + QuotedStr(Field.AsString));
-    if (i < FieldCount-1) then
+    if Field.IsBlob or Field.IsNull or (Field = cdsid) then
+      Continue;
+    if Result <> '{' then
+      Result:= Result + ', ';
+    Result:= Result + '"' + Field.FieldName + '" : "' + Field.AsString + '"';
+  end;
+  Result:= Result + '}';
+end;
+
+procedure TFormAgenda.SendPostRequest(const Json: string);
+var
+  Dados: TStringStream;
+  Response: string;
+  obj: TlkJSONobject;
+begin
+  Dados:= TStringStream.Create(UTF8Encode(Json));
+  IdHTTP.Request.Method:= 'POST';
+  try
+    Response:= IdHTTP.Post(UrlServico, Dados);
+    obj := TlkJSON.ParseText(Response) as TlkJSONobject;
+    cds.Edit;
+    cdsid.AsInteger := obj.Field['id'].Value;
+    cds.Post;
+    ShowMessage('Contato salvo com sucesso!');
+    PageControl1.ActivePage:= tabAgenda;
+    grditens.SetFocus;
+  except
+    on E: EIdHTTPProtocolException do
     begin
-      Result.Append(',');
+      obj := TlkJSON.ParseText(E.ErrorMessage) as TlkJSONobject;
+      ShowMessage('Não foi possível salvar os dados do contato. '#13#10#13#10 + 'Motivo: '+ obj.Field['message'].Value);
     end;
   end;
-  Result.Append('}');
 end;
 
-procedure TFormAgenda.SendPostRequest(const Json: TStringList);
+
+procedure TFormAgenda.SendPutRequest(const Json: string; id: Integer);
+var
+  Url: string;
+  Dados: TStringStream;
+  Response: string;
+  obj: TlkJSONobject;
 begin
-  IdHTTP.Post(UrlServico, Json);
+  Dados:= TStringStream.Create(UTF8Encode(Json));
+  Url:= UrlServico + '/' + cdsid.AsString;
+  IdHTTP.Request.Method:= 'PUT';
+  try
+    Response:= IdHTTP.Put(Url, Dados);
+    ShowMessage('Contato salvo com sucesso!');
+    PageControl1.ActivePage:= tabAgenda;
+    grditens.SetFocus;
+  except
+    on E: EIdHTTPProtocolException do
+    begin
+      obj := TlkJSON.ParseText(E.ErrorMessage) as TlkJSONobject;
+      ShowMessage('Não foi possível salvar os dados do contato. '#13#10#13#10 + 'Motivo: '+ obj.Field['message'].Value);
+    end;
+  end;
 end;
 
-
-procedure TFormAgenda.SendPutRequest(const Json: TStringList; id: Integer);
+function TFormAgenda.GetRequest(const Url: string): string;
+var
+  DbSize: Integer;
 begin
+    try
+      Result:= IdHTTP.get(Url);
+    except
+      DbSize:= FileSize(DbFile);
+      // Se o arquivo de cache dos dados já existe, apenas o carrega-o
+      if DbSize > 310 then
+      begin
+        Result:= '';
+        cds.LoadFromFile(DbFile);
+        ShowMessage('Não foi possível conectar no barramento de serviços, mas eu posso disponibilizar os dados da última consulta!');
+      end
+      else
+      begin
+        Result:= '';
+        ShowMessage('Não foi possível conectar no barramento de serviços. Verifique a conectividade!');
+        Application.Terminate;
+      end;
+    end;
+end;
+
+procedure TFormAgenda.ValidaContato();
+begin
+  if (cdsmatricula.IsNull or (Trim(cdsmatricula.AsString) = '')) then
+  begin
+    edtMatricula.SetFocus;
+    raise Exception.Create('A matrícula do contato é obrigatório!');
+  end;
+  if (cdsnome.IsNull or (Trim(cdsnome.AsString) = '')) then
+  begin
+    edtNomeContato.SetFocus;
+    raise Exception.Create('O nome do contato é obrigatório!');
+  end;
+  if (cdstelefone.IsNull or (Trim(cdstelefone.AsString) = '')) then
+  begin
+    edtTelefone.SetFocus;
+    raise Exception.Create('O telefone do contato é obrigatório!');
+  end;
+  if (cdscelular.IsNull or (Trim(cdscelular.AsString) = '')) then
+  begin
+    edtCelular.SetFocus;
+    raise Exception.Create('O celular do contato é obrigatório!');
+  end;
+  if (cdsramal.IsNull or (Trim(cdsramal.AsString) = '')) then
+  begin
+    edtRamal.SetFocus;
+    raise Exception.Create('O ramal do contato é obrigatório!');
+  end;
+  if (cdslocal.IsNull or (Trim(cdslocal.AsString) = '')) then
+  begin
+    edtLocal.SetFocus;
+    raise Exception.Create('O local do contato é obrigatório!');
+  end;
+  if (cdsemail.IsNull or (Trim(cdsemail.AsString) = '')) then
+  begin
+    edtEmail.SetFocus;
+    raise Exception.Create('O e-mail do contato é obrigatório!');
+  end;
+  if (cdsadmissao.IsNull or not IsDateValid(cdsadmissao.AsString)) then
+  begin
+    edtAdmissao.SetFocus;
+    raise Exception.Create('A data de admissão do contato é obrigatório!');
+  end;
 
 end;
+
 
 
 
 end.
+
