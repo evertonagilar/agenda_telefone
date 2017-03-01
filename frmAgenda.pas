@@ -69,6 +69,7 @@ type
     GroupBox1: TGroupBox;
     imgFoto: TImage;
     btnCaptura: TButton;
+    ClientDataSet1: TClientDataSet;
     procedure edtNomeChange(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure grdItensDrawColumnCell(Sender: TObject; const Rect: TRect;
@@ -86,6 +87,14 @@ type
     procedure edtRamalKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure btnCapturaClick(Sender: TObject);
+    procedure edtNomeKeyPress(Sender: TObject; var Key: Char);
+    procedure edtNomeContatoKeyPress(Sender: TObject; var Key: Char);
+    procedure edtSetorKeyPress(Sender: TObject; var Key: Char);
+    procedure edtLocalKeyPress(Sender: TObject; var Key: Char);
+    procedure edtCargoKeyPress(Sender: TObject; var Key: Char);
+    procedure edtEmailKeyPress(Sender: TObject; var Key: Char);
+    procedure edtRamalKeyPress(Sender: TObject; var Key: Char);
+    procedure edtMatriculaKeyPress(Sender: TObject; var Key: Char);
   private
     HostFile: string;
     Host: string;
@@ -98,6 +107,7 @@ type
     procedure SendPutRequest(const Json: string; id: Integer);
     function GetRequest(const Url: string): string;
     procedure ValidaContato();
+    procedure importa();
     public
     { Public declarations }
   end;
@@ -119,6 +129,11 @@ begin
   except
     Result:= False;
   end;
+end;
+
+function isInvalidKey(const Key: Char): Boolean;
+begin
+  Result:= (Key = '"') or (Key = '\,') or (Key = '!') or (Key = '&') or (Key = '?') or (Key = '%') or (Key = '*') or (Key = '¨') or (Key = '#') or (Key = '$');
 end;
 
 function FileSize(const fileName : wideString) : Int64;
@@ -168,7 +183,6 @@ end;
 
 procedure TFormAgenda.loadDados();
 var
-  HostFile: string;
   js: TlkJSONobject;
   json: TlkJSONlist;
   Url: string;
@@ -257,9 +271,34 @@ begin
   end;
 end;
 
+procedure TFormAgenda.edtCargoKeyPress(Sender: TObject; var Key: Char);
+begin
+  if isInvalidKey(Key) then
+    Key:= #0;
+end;
+
+procedure TFormAgenda.edtEmailKeyPress(Sender: TObject; var Key: Char);
+begin
+  if isInvalidKey(Key) then
+    Key:= #0;
+end;
+
+procedure TFormAgenda.edtLocalKeyPress(Sender: TObject; var Key: Char);
+begin
+  if isInvalidKey(Key) then
+    Key:= #0;
+end;
+
+procedure TFormAgenda.edtMatriculaKeyPress(Sender: TObject; var Key: Char);
+begin
+  if not (Key in ['0'..'9', #8]) then
+    Key:= #0;
+end;
+
 procedure TFormAgenda.edtNomeChange(Sender: TObject);
 var
   NomePesquisa: string;
+  Value: string;
 begin
   NomePesquisa:= Trim(edtNome.Text);
   if NomePesquisa <> '' then
@@ -267,16 +306,21 @@ begin
     cds.DisableControls;
     cds.Filtered:= False;
     cds.FilterOptions:= [foCaseInsensitive];
-    cds.Filter := 'nome like ' + QuotedStr('%' + edtNome.Text + '%');
+    Value:= QuotedStr('%' + edtNome.Text + '%');
+    cds.Filter := 'nome like ' + Value + ' or matricula like '+ Value + ' or ramal like '+ Value + ' or setor like '+ Value + ' or local like '+ Value + ' or telefone like '+ Value + ' or celular like '+ Value + ' or email like '+ Value;
     cds.Filtered:= True;
-    StatusBar.Panels[1].Text:= 'Barramento: '+ UrlServico + '?filter="{ "nome__contains" : "'+ edtNome.Text + '" }"';
     cds.EnableControls;
   end
   else
   begin
     cds.Filtered:= False;
-    StatusBar.Panels[1].Text:= 'Barramento: '+ UrlServico
   end;
+end;
+
+procedure TFormAgenda.edtNomeContatoKeyPress(Sender: TObject; var Key: Char);
+begin
+  if isInvalidKey(Key) then
+    Key:= #0;
 end;
 
 procedure TFormAgenda.FormShow(Sender: TObject);
@@ -304,6 +348,10 @@ begin
   end
   else
     UrlServico:= Host + '/administrativo/informacoes';
+
+    //importa();
+    //exit;
+
 
   DbFile:= AppDir + 'agenda.dat';
   PageControl1.ActivePage:= tabAgenda;
@@ -379,7 +427,15 @@ procedure TFormAgenda.edtNomeKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   if Key =  VK_DOWN then
-    grdItens.SetFocus;
+    grdItens.SetFocus
+  else if Key < 31 then
+    Key:= 0;
+end;
+
+procedure TFormAgenda.edtNomeKeyPress(Sender: TObject; var Key: Char);
+begin
+  if isInvalidKey(Key) then
+    Key:= #0;
 end;
 
 procedure TFormAgenda.edtRamalKeyDown(Sender: TObject; var Key: Word;
@@ -387,6 +443,18 @@ procedure TFormAgenda.edtRamalKeyDown(Sender: TObject; var Key: Word;
 begin
   if not Key in [0..9] then
     Key:= 0;
+end;
+
+procedure TFormAgenda.edtRamalKeyPress(Sender: TObject; var Key: Char);
+begin
+  if isInvalidKey(Key) then
+    Key:= #0;
+end;
+
+procedure TFormAgenda.edtSetorKeyPress(Sender: TObject; var Key: Char);
+begin
+  if isInvalidKey(Key) then
+    Key:= #0;
 end;
 
 procedure TFormAgenda.btnCapturaClick(Sender: TObject);
@@ -461,17 +529,23 @@ procedure TFormAgenda.btnSalvarContatoClick(Sender: TObject);
 var
   JsonRecord: string;
 begin
-  SelectNext(ActiveControl, True, True);
-  ValidaContato;
-  JsonRecord:= RecordToJson();
-  if ds.State in [dsEdit, dsInsert] then
-    cds.Post;
-  if (JsonRecord <> '') and (JsonRecord <> '{}') then
-  begin
-    if cdsid.IsNull then
-      SendPostRequest(JsonRecord)
-    else
-      SendPutRequest(JsonRecord, cdsid.AsInteger);
+  Screen.Cursor:= crHourGlass;
+  try
+    SelectNext(ActiveControl, True, True);
+    ValidaContato;
+    JsonRecord:= RecordToJson();
+    if ds.State in [dsEdit, dsInsert] then
+      cds.Post;
+    if (JsonRecord <> '') and (JsonRecord <> '{}') then
+    begin
+      if cdsid.IsNull then
+        SendPostRequest(JsonRecord)
+      else
+        SendPutRequest(JsonRecord, cdsid.AsInteger);
+      ShowMessage('Contato salvo com sucesso!');
+    end;
+  finally
+    Screen.Cursor:= crDefault;
   end;
 end;
 
@@ -479,7 +553,6 @@ function TFormAgenda.RecordToJson(): string;
 var
   Field: TField;
   FieldCount: Integer;
-  SkipFields: Integer;
   i: Integer;
 begin
   Result:= '{';
@@ -510,14 +583,13 @@ begin
     cds.Edit;
     cdsid.AsInteger := obj.Field['id'].Value;
     cds.Post;
-    ShowMessage('Contato salvo com sucesso!');
     PageControl1.ActivePage:= tabAgenda;
     grditens.SetFocus;
   except
     on E: EIdHTTPProtocolException do
     begin
       obj := TlkJSON.ParseText(E.ErrorMessage) as TlkJSONobject;
-      ShowMessage('Não foi possível salvar os dados do contato. '#13#10#13#10 + 'Motivo: '+ obj.Field['message'].Value);
+      raise Exception.Create('Não foi possível salvar os dados do contato. '#13#10#13#10 + 'Motivo: '+ obj.Field['message'].Value);
     end;
   end;
 end;
@@ -535,14 +607,13 @@ begin
   IdHTTP.Request.Method:= 'PUT';
   try
     Response:= IdHTTP.Put(Url, Dados);
-    ShowMessage('Contato salvo com sucesso!');
     PageControl1.ActivePage:= tabAgenda;
     grditens.SetFocus;
   except
     on E: EIdHTTPProtocolException do
     begin
       obj := TlkJSON.ParseText(E.ErrorMessage) as TlkJSONobject;
-      ShowMessage('Não foi possível salvar os dados do contato. '#13#10#13#10 + 'Motivo: '+ obj.Field['message'].Value);
+      raise Exception.Create('Não foi possível salvar os dados do contato. '#13#10#13#10 + 'Motivo: '+ obj.Field['message'].Value);
     end;
   end;
 end;
@@ -616,7 +687,44 @@ begin
 
 end;
 
+procedure TFormAgenda.importa();
+var
+  JsonRecord: string;
+begin
+    ClientDataSet1.LoadFromFile('agenda.dat');
+    ClientDataSet1.First;
+    while not ClientDataSet1.Eof do
+    begin
+      cds.Append;
+      cdsid.AsInteger:= ClientDataSet1.FieldByName('id').AsInteger;
+      cdsmatricula.AsString:= ClientDataSet1.FieldByName('matricula').AsString;
+      cdsnome.AsString:= ClientDataSet1.FieldByName('nome').AsString;
+      cdstelefone.AsString:= ClientDataSet1.FieldByName('telefone1').AsString;
+      if Length(cdstelefone.AsString) = 10 then
+        cdstelefone.AsString:= '(061) ' + cdstelefone.AsString
+      else if Length(cdstelefone.AsString) = 9 then
+        cdstelefone.AsString:= '(061) ' + Copy(cdstelefone.AsString, 1, 5) + '-' + Copy(cdstelefone.AsString, 5);
+      cdscelular.AsString:= cdstelefone.AsString;
+      cdsramal.AsString:= ClientDataSet1.FieldByName('ramal').AsString;
+      cdssetor.AsString:= ClientDataSet1.FieldByName('setor').AsString;
+      cdscargo.AsString:= ClientDataSet1.FieldByName('cargo').AsString;
+      cdsemail.AsString:= ClientDataSet1.FieldByName('email').AsString;
+      if cdsemail.IsNull or (cdsemail.AsString = '') then
+        cdsemail.AsString:= 'Não informado';
+      cdslocal.AsString:= ClientDataSet1.FieldByName('local').AsString;
+      cdsvisitante.AsBoolean:= False;
+      cdscoordenador.AsBoolean:= False;
+      cdsadmissao.AsDateTime:= Date;
+      JsonRecord:= RecordToJson();
+      cds.Post;
+      try
+        SendPostRequest(JsonRecord);
+      except
 
+      end;
+      ClientDataSet1.Next;
+    end;
+end;
 
 
 end.

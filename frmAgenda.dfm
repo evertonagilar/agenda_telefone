@@ -38,7 +38,7 @@ object FormAgenda: TFormAgenda
     Top = 0
     Width = 1031
     Height = 579
-    ActivePage = tabAgenda
+    ActivePage = tabContato
     Align = alClient
     TabOrder = 1
     TabPosition = tpBottom
@@ -65,9 +65,9 @@ object FormAgenda: TFormAgenda
       object Label1: TLabel
         Left = 3
         Top = 46
-        Width = 374
+        Width = 294
         Height = 16
-        Caption = '&Informe o nome do contato ou parte dele para pesquisar:'
+        Caption = '&Informe os dados do contato para pesquisar:'
         FocusControl = edtNome
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
@@ -314,6 +314,7 @@ object FormAgenda: TFormAgenda
         TabOrder = 0
         OnChange = edtNomeChange
         OnKeyDown = edtNomeKeyDown
+        OnKeyPress = edtNomeKeyPress
       end
       object grdItens: TDBGrid
         Left = 3
@@ -405,8 +406,6 @@ object FormAgenda: TFormAgenda
     object tabContato: TTabSheet
       Caption = 'Dados do Contato'
       ImageIndex = 1
-      ExplicitLeft = 8
-      ExplicitTop = 0
       object lblState: TLabel
         Left = 18
         Top = 21
@@ -569,6 +568,7 @@ object FormAgenda: TFormAgenda
         DataField = 'matricula'
         DataSource = ds
         TabOrder = 0
+        OnKeyPress = edtMatriculaKeyPress
       end
       object edtNomeContato: TDBEdit
         Left = 10
@@ -578,6 +578,7 @@ object FormAgenda: TFormAgenda
         DataField = 'nome'
         DataSource = ds
         TabOrder = 1
+        OnKeyPress = edtNomeContatoKeyPress
       end
       object edtTelefone: TDBEdit
         Left = 10
@@ -608,6 +609,7 @@ object FormAgenda: TFormAgenda
         DataSource = ds
         TabOrder = 4
         OnKeyDown = edtRamalKeyDown
+        OnKeyPress = edtRamalKeyPress
       end
       object edtSetor: TDBEdit
         Left = 10
@@ -617,6 +619,7 @@ object FormAgenda: TFormAgenda
         DataField = 'setor'
         DataSource = ds
         TabOrder = 5
+        OnKeyPress = edtSetorKeyPress
       end
       object edtCargo: TDBEdit
         Left = 10
@@ -626,6 +629,7 @@ object FormAgenda: TFormAgenda
         DataField = 'cargo'
         DataSource = ds
         TabOrder = 7
+        OnKeyPress = edtCargoKeyPress
       end
       object edtAdmissao: TDBEdit
         Left = 10
@@ -645,6 +649,7 @@ object FormAgenda: TFormAgenda
         DataSource = ds
         MaxLength = 150
         TabOrder = 9
+        OnKeyPress = edtEmailKeyPress
       end
       object DBCheckBox1: TDBCheckBox
         Left = 10
@@ -664,6 +669,7 @@ object FormAgenda: TFormAgenda
         DataField = 'local'
         DataSource = ds
         TabOrder = 6
+        OnKeyPress = edtLocalKeyPress
       end
       object GroupBox1: TGroupBox
         Left = 761
@@ -883,7 +889,7 @@ object FormAgenda: TFormAgenda
     Left = 312
     Top = 472
     Bitmap = {
-      494C010115001800280010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C0101150018002C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000006000000001002000000000000060
       00000000000000000000000000000000000000000000000000007F7F7F007F7F
       7F007F7F7F007F7F7F007F7F7F007F7F7F007F7F7F007F7F7F007F7F7F007F7F
@@ -1700,5 +1706,104 @@ object FormAgenda: TFormAgenda
     object IntegerField1: TIntegerField
       FieldName = 'id'
     end
+  end
+  object ClientDataSet1: TClientDataSet
+    PersistDataPacket.Data = {
+      9C0100009619E0BD01000000180000000F0000000000030000009C0102696404
+      00010000000000096D6174726963756C61010049000000010005574944544802
+      0002006400046E6F6D6501004900000001000557494454480200020064000874
+      656C65666F6E650100490000000100055749445448020002001E000763656C75
+      6C61720100490000000100055749445448020002001E000572616D616C010049
+      0000000100055749445448020002000500057365746F72010049000000010005
+      5749445448020002003C0005636172676F010049000000010005574944544802
+      0002003C000861646D697373616F080008000000000005656D61696C01004900
+      00000100055749445448020002007800056C6F63616C01004900000001000557
+      49445448020002003C0004666F746F04004B0000000100075355425459504502
+      00490009004772617068696373000B616E69766572736172696F040006000000
+      0000097669736974616E746502000300000000000B636F6F7264656E61646F72
+      020003000000000001000D44454641554C545F4F524445520200820000000000}
+    Active = True
+    Aggregates = <>
+    FieldDefs = <
+      item
+        Name = 'id'
+        DataType = ftInteger
+      end
+      item
+        Name = 'matricula'
+        DataType = ftInteger
+      end
+      item
+        Name = 'nome'
+        DataType = ftString
+        Size = 100
+      end
+      item
+        Name = 'telefone'
+        DataType = ftString
+        Size = 30
+      end
+      item
+        Name = 'celular'
+        DataType = ftString
+        Size = 30
+      end
+      item
+        Name = 'ramal'
+        DataType = ftString
+        Size = 5
+      end
+      item
+        Name = 'setor'
+        DataType = ftString
+        Size = 60
+      end
+      item
+        Name = 'cargo'
+        DataType = ftString
+        Size = 60
+      end
+      item
+        Name = 'admissao'
+        DataType = ftDateTime
+      end
+      item
+        Name = 'email'
+        DataType = ftString
+        Size = 120
+      end
+      item
+        Name = 'local'
+        DataType = ftString
+        Size = 60
+      end
+      item
+        Name = 'foto'
+        DataType = ftGraphic
+      end
+      item
+        Name = 'aniversario'
+        DataType = ftDate
+      end
+      item
+        Name = 'visitante'
+        DataType = ftBoolean
+      end
+      item
+        Name = 'coordenador'
+        DataType = ftBoolean
+      end>
+    IndexDefs = <
+      item
+        Name = 'DEFAULT_ORDER'
+      end
+      item
+        Name = 'CHANGEINDEX'
+      end>
+    IndexFieldNames = 'nome'
+    Params = <>
+    StoreDefs = True
+    Left = 232
+    Top = 384
   end
 end
