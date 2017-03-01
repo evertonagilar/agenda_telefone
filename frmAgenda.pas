@@ -384,6 +384,8 @@ begin
   Top:=(Screen.Height-Height) div 2;
   PageControl1.ActivePage:= tabAgenda;
   ActiveControl:= edtNome;
+  cds.Filtered:= False;
+  edtNome.Clear;
   loadDados();
   cds.First;
 end;
