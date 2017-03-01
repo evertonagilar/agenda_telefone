@@ -281,6 +281,8 @@ end;
 
 procedure TFormAgenda.FormShow(Sender: TObject);
 begin
+  Left:=(Screen.Width-Width)  div 2;
+  Top:=(Screen.Height-Height) div 2;
   AppDir:= ExtractFilePath(Application.ExeName);
 
   // Arquivo com o host
