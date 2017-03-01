@@ -3,7 +3,9 @@ object FormAgenda: TFormAgenda
   Top = 78
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
-  Caption = 'Pesquisar Telefone/Ramal no CPD/UnB  (Vers'#227'o 1.0.0)'
+  Caption = 
+    'Pesquisar Telefone/Ramal no CPD/UnB   << Use a tecla de atalho W' +
+    'in + F10 >>'
   ClientHeight = 598
   ClientWidth = 1031
   Color = clWindow
@@ -16,6 +18,7 @@ object FormAgenda: TFormAgenda
   OldCreateOrder = False
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
@@ -52,9 +55,9 @@ object FormAgenda: TFormAgenda
       object JvHTLabel2: TLabel
         Left = 3
         Top = 10
-        Width = 316
+        Width = 290
         Height = 30
-        Caption = 'Lista de Ramais / Telefones'
+        Caption = 'Lista de Telefone / Ramal'
         Font.Charset = ANSI_CHARSET
         Font.Color = 1795864
         Font.Height = -21
@@ -891,7 +894,7 @@ object FormAgenda: TFormAgenda
     Left = 312
     Top = 472
     Bitmap = {
-      494C010115001800340010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010115001800380010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000006000000001002000000000000060
       00000000000000000000000000000000000000000000000000007F7F7F007F7F
       7F007F7F7F007F7F7F007F7F7F007F7F7F007F7F7F007F7F7F007F7F7F007F7F
@@ -1810,10 +1813,29 @@ object FormAgenda: TFormAgenda
     Top = 384
   end
   object TrayIcon: TTrayIcon
+    PopupMenu = PopupMenuTrayIcon
     Visible = True
     OnClick = TrayIconClick
     OnDblClick = TrayIconClick
     Left = 540
     Top = 476
+  end
+  object PopupMenuTrayIcon: TPopupMenu
+    Images = ImageList1
+    Left = 620
+    Top = 476
+    object ExibirAgenda1: TMenuItem
+      Caption = 'Exibir Agenda'
+      ImageIndex = 11
+      OnClick = TrayIconClick
+    end
+    object N1: TMenuItem
+      Caption = '-'
+    end
+    object Finalizar1: TMenuItem
+      Caption = 'Finalizar'
+      ImageIndex = 19
+      OnClick = Finalizar1Click
+    end
   end
 end

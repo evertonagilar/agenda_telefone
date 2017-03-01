@@ -7,7 +7,8 @@ uses
   Data.DB, System.ImageList, Vcl.ImgList, IdBaseComponent, IdComponent,
   IdTCPConnection, IdTCPClient, IdHTTP, Datasnap.DBClient, Vcl.DBCtrls,
   Vcl.Mask, Vcl.Buttons, Vcl.ComCtrls, Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.Grids,
-  Vcl.DBGrids, uLkJSON, Dialogs, Vcl.Imaging.pngimage, IdAuthentication, JPeg;
+  Vcl.DBGrids, uLkJSON, Dialogs, Vcl.Imaging.pngimage, IdAuthentication, JPeg,
+  Vcl.Menus;
 
 type
   TFormAgenda = class(TForm)
@@ -71,6 +72,10 @@ type
     btnCaptura: TButton;
     ClientDataSet1: TClientDataSet;
     TrayIcon: TTrayIcon;
+    PopupMenuTrayIcon: TPopupMenu;
+    Finalizar1: TMenuItem;
+    ExibirAgenda1: TMenuItem;
+    N1: TMenuItem;
     procedure edtNomeChange(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure grdItensDrawColumnCell(Sender: TObject; const Rect: TRect;
@@ -99,12 +104,15 @@ type
     procedure TrayIconClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormCreate(Sender: TObject);
+    procedure Finalizar1Click(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     HostFile: string;
     Host: string;
     UrlServico: string;
     AppDir: string;
     DbFile: string;
+    Atalho: Word;
     AlertaFalhaComunicacao: Boolean;
     procedure loadDados();
     function RecordToJson(): string;
@@ -113,7 +121,8 @@ type
     function GetRequest(const Url: string): string;
     procedure ValidaContato();
     procedure importa();
-    public
+    procedure WMHotKey(var Msg: TWMHotKey); message WM_HOTKEY;
+  public
     { Public declarations }
   end;
 
@@ -337,10 +346,16 @@ begin
     Key:= #0;
 end;
 
+procedure TFormAgenda.Finalizar1Click(Sender: TObject);
+begin
+  Application.Terminate;
+end;
+
 procedure TFormAgenda.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
   Application.Minimize;
   Hide;
+  ShowWindow(Application.Handle, SW_HIDE);
   CanClose:= False;
 end;
 
@@ -376,6 +391,16 @@ begin
   StringToFile(HostFile, Host, False);
   StatusBar.Panels[1].Text:= 'Barramento: '+ UrlServico;
   AlertaFalhaComunicacao:= True;
+
+// Register Hotkey Win + A
+  Atalho := GlobalAddAtom('Hotkey1');
+  RegisterHotKey(Handle, Atalho, MOD_WIN, VK_F10);
+end;
+
+procedure TFormAgenda.FormDestroy(Sender: TObject);
+begin
+  UnRegisterHotKey(Handle, Atalho);
+  GlobalDeleteAtom(Atalho);
 end;
 
 procedure TFormAgenda.FormShow(Sender: TObject);
@@ -650,6 +675,7 @@ begin
   Screen.Cursor:= crHourGlass;
   AlertaFalhaComunicacao:= False;
   try
+    ShowWindow(Application.Handle, SW_SHOW);
     Application.Restore;
     Application.ProcessMessages;
     Application.ProcessMessages;
@@ -771,6 +797,11 @@ begin
     end;
 end;
 
+procedure TFormAgenda.WMHotKey(var Msg: TWMHotKey);
+begin
+  if Msg.HotKey = Atalho then
+    TrayIconClick(Self);
+end;
 
 end.
 
