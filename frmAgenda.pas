@@ -645,6 +645,7 @@ end;
 
 procedure TFormAgenda.TrayIconClick(Sender: TObject);
 begin
+  Screen.Cursor:= crHourGlass;
   AlertaFalhaComunicacao:= False;
   try
     Application.Restore;
@@ -655,6 +656,7 @@ begin
     BringToFront;
   finally
     AlertaFalhaComunicacao:= True;
+    Screen.Cursor:= crDefault;
   end;
 end;
 
