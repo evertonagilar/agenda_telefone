@@ -70,6 +70,7 @@ type
     imgFoto: TImage;
     btnCaptura: TButton;
     ClientDataSet1: TClientDataSet;
+    TrayIcon: TTrayIcon;
     procedure edtNomeChange(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure grdItensDrawColumnCell(Sender: TObject; const Rect: TRect;
@@ -95,12 +96,16 @@ type
     procedure edtEmailKeyPress(Sender: TObject; var Key: Char);
     procedure edtRamalKeyPress(Sender: TObject; var Key: Char);
     procedure edtMatriculaKeyPress(Sender: TObject; var Key: Char);
+    procedure TrayIconClick(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure FormCreate(Sender: TObject);
   private
     HostFile: string;
     Host: string;
     UrlServico: string;
     AppDir: string;
     DbFile: string;
+    AlertaFalhaComunicacao: Boolean;
     procedure loadDados();
     function RecordToJson(): string;
     procedure SendPostRequest(const Json: string);
@@ -189,20 +194,28 @@ var
   Str : string;
   offset: Integer;
   i, j: Integer;
+  EmptyCdsBeforeLoad: Boolean;
 begin
   Screen.Cursor:= crHourGlass;
   cds.DisableControls;
   try
+    EmptyCdsBeforeLoad:= True;
       // Já está preparado para carregar muitos dados com várias requisições pequenas
-      for i:= 0 to 40 do
+      for i:= 0 to 100 do
       begin
-        offset:= i * 5000;
+        offset:= i * 1000;
 
         // Monta a requisição e envia ao barramento
-        Url:= UrlServico + '?offset='+ IntToStr(offset);
+        Url:= UrlServico + '?offset='+ IntToStr(offset)+'&limit=1000';
         Str := GetRequest(Url);
-        if (Str <> '') then
+        if (Str <> '') and (Str <> '[]') then
         begin
+          if EmptyCdsBeforeLoad then
+          begin
+            cds.EmptyDataSet;
+            EmptyCdsBeforeLoad:= False;
+          end;
+
           // parser do json
           json := TlkJSON.ParseText(Str) as TlkJSONlist;
           if json = nil then
@@ -243,7 +256,8 @@ begin
 
     // Salva a agenda para trabalhar offline
     try
-      cds.SaveToFile(DbFile);
+      if not cds.IsEmpty then
+        cds.SaveToFile(DbFile);
     except
       // Não tem permissão para gravar no disco
     end;
@@ -323,12 +337,15 @@ begin
     Key:= #0;
 end;
 
-procedure TFormAgenda.FormShow(Sender: TObject);
+procedure TFormAgenda.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
-  Left:=(Screen.Width-Width)  div 2;
-  Top:=(Screen.Height-Height) div 2;
-  AppDir:= ExtractFilePath(Application.ExeName);
+  Application.Minimize;
+  Hide;
+  CanClose:= False;
+end;
 
+procedure TFormAgenda.FormCreate(Sender: TObject);
+begin
   // Arquivo com o host
   HostFile:= AppDir + 'host';
   if FileExists(HostFile) then
@@ -354,13 +371,21 @@ begin
 
 
   DbFile:= AppDir + 'agenda.dat';
-  PageControl1.ActivePage:= tabAgenda;
-  loadDados();
   SetFileAttributes(PWideChar(HostFile), 2);
   SetFileAttributes(PWideChar(DbFile), 2);
   StringToFile(HostFile, Host, False);
   StatusBar.Panels[1].Text:= 'Barramento: '+ UrlServico;
+  AlertaFalhaComunicacao:= True;
+end;
+
+procedure TFormAgenda.FormShow(Sender: TObject);
+begin
+  Left:=(Screen.Width-Width)  div 2;
+  Top:=(Screen.Height-Height) div 2;
+  PageControl1.ActivePage:= tabAgenda;
   ActiveControl:= edtNome;
+  loadDados();
+  cds.First;
 end;
 
 procedure TFormAgenda.grdItensDblClick(Sender: TObject);
@@ -618,6 +643,21 @@ begin
   end;
 end;
 
+procedure TFormAgenda.TrayIconClick(Sender: TObject);
+begin
+  AlertaFalhaComunicacao:= False;
+  try
+    Application.Restore;
+    Application.ProcessMessages;
+    Application.ProcessMessages;
+    Application.ProcessMessages;
+    Show;
+    BringToFront;
+  finally
+    AlertaFalhaComunicacao:= True;
+  end;
+end;
+
 function TFormAgenda.GetRequest(const Url: string): string;
 var
   DbSize: Integer;
@@ -627,17 +667,18 @@ begin
     except
       DbSize:= FileSize(DbFile);
       // Se o arquivo de cache dos dados já existe, apenas o carrega-o
-      if DbSize > 310 then
+      if cds.IsEmpty and (DbSize > 310) then
       begin
         Result:= '';
         cds.LoadFromFile(DbFile);
-        ShowMessage('Não foi possível conectar no barramento de serviços, mas eu posso disponibilizar os dados da última consulta!');
+        if AlertaFalhaComunicacao then
+          ShowMessage('Não foi possível conectar no barramento de serviços, disponibilizando os dados da última consulta!');
       end
       else
       begin
         Result:= '';
-        ShowMessage('Não foi possível conectar no barramento de serviços. Verifique a conectividade!');
-        Application.Terminate;
+        if AlertaFalhaComunicacao then
+          ShowMessage('Não foi possível conectar no barramento de serviços. Verifique a conectividade!');
       end;
     end;
 end;
@@ -691,7 +732,7 @@ procedure TFormAgenda.importa();
 var
   JsonRecord: string;
 begin
-    ClientDataSet1.LoadFromFile('agenda.dat');
+    ClientDataSet1.LoadFromFile('agenda.dat_');
     ClientDataSet1.First;
     while not ClientDataSet1.Eof do
     begin

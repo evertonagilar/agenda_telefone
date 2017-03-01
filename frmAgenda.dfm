@@ -14,6 +14,8 @@ object FormAgenda: TFormAgenda
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   OldCreateOrder = False
+  OnCloseQuery = FormCloseQuery
+  OnCreate = FormCreate
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
@@ -889,7 +891,7 @@ object FormAgenda: TFormAgenda
     Left = 312
     Top = 472
     Bitmap = {
-      494C0101150018002C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010115001800300010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000006000000001002000000000000060
       00000000000000000000000000000000000000000000000000007F7F7F007F7F
       7F007F7F7F007F7F7F007F7F7F007F7F7F007F7F7F007F7F7F007F7F7F007F7F
@@ -1731,7 +1733,8 @@ object FormAgenda: TFormAgenda
       end
       item
         Name = 'matricula'
-        DataType = ftInteger
+        DataType = ftString
+        Size = 100
       end
       item
         Name = 'nome'
@@ -1805,5 +1808,12 @@ object FormAgenda: TFormAgenda
     StoreDefs = True
     Left = 232
     Top = 384
+  end
+  object TrayIcon: TTrayIcon
+    Visible = True
+    OnClick = TrayIconClick
+    OnDblClick = TrayIconClick
+    Left = 540
+    Top = 476
   end
 end
