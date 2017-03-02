@@ -7,6 +7,7 @@ uses
   uLkJSON in 'uLkJSON.pas',
   Vcl.Themes,
   Vcl.Styles,
+  Windows,
   avicaptura in 'WebCam\TCamera\avicaptura.pas',
   cam in 'WebCam\TCamera\cam.pas' {MainForm},
   camera in 'WebCam\TCamera\camera.pas',

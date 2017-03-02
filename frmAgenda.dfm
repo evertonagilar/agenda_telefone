@@ -4,8 +4,8 @@ object FormAgenda: TFormAgenda
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 
-    'Pesquisar Telefone/Ramal no CPD/UnB   << Use a tecla de atalho W' +
-    'in + F10 >>'
+    'Pesquisar Telefone / Ramal no CPD/UnB   (Vers'#227'o 2.0)    << Use a' +
+    ' tecla de atalho Win + F10 >>'
   ClientHeight = 598
   ClientWidth = 1031
   Color = clWindow
@@ -345,6 +345,7 @@ object FormAgenda: TFormAgenda
         TitleFont.Style = [fsBold]
         OnDrawColumnCell = grdItensDrawColumnCell
         OnDblClick = grdItensDblClick
+        OnKeyDown = grdItensKeyDown
         Columns = <
           item
             Alignment = taRightJustify
@@ -894,7 +895,7 @@ object FormAgenda: TFormAgenda
     Left = 312
     Top = 472
     Bitmap = {
-      494C010115001800380010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010115001800500010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000006000000001002000000000000060
       00000000000000000000000000000000000000000000000000007F7F7F007F7F
       7F007F7F7F007F7F7F007F7F7F007F7F7F007F7F7F007F7F7F007F7F7F007F7F

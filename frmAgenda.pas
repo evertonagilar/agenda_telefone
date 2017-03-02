@@ -8,7 +8,7 @@ uses
   IdTCPConnection, IdTCPClient, IdHTTP, Datasnap.DBClient, Vcl.DBCtrls,
   Vcl.Mask, Vcl.Buttons, Vcl.ComCtrls, Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.Grids,
   Vcl.DBGrids, uLkJSON, Dialogs, Vcl.Imaging.pngimage, IdAuthentication, JPeg,
-  Vcl.Menus;
+  Vcl.Menus, Registry, IdRawBase, IdRawClient, IdIcmpClient;
 
 type
   TFormAgenda = class(TForm)
@@ -106,9 +106,12 @@ type
     procedure FormCreate(Sender: TObject);
     procedure Finalizar1Click(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure grdItensKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
     HostFile: string;
     Host: string;
+    HostName: string;
     UrlServico: string;
     AppDir: string;
     DbFile: string;
@@ -122,6 +125,8 @@ type
     procedure ValidaContato();
     procedure importa();
     procedure WMHotKey(var Msg: TWMHotKey); message WM_HOTKEY;
+    procedure CheckAutoIniciarWindows;
+    function ping(): Boolean;
   public
     { Public declarations }
   end;
@@ -266,7 +271,11 @@ begin
     // Salva a agenda para trabalhar offline
     try
       if not cds.IsEmpty then
+      begin
+        DeleteFile(DbFile);
         cds.SaveToFile(DbFile);
+        SetFileAttributes(PWideChar(DbFile), 2);
+      end;
     except
       // Não tem permissão para gravar no disco
     end;
@@ -361,16 +370,18 @@ end;
 
 procedure TFormAgenda.FormCreate(Sender: TObject);
 begin
-  // Arquivo com o host
+  AppDir:= ExtractFilePath(Application.ExeName);
   HostFile:= AppDir + 'host';
   if FileExists(HostFile) then
-     Host:= ReadLine(HostFile);
+      Host:= ReadLine(HostFile)
+  else
+      Host:= '';
 
   // Se o host não foi informado, pergunta para o usuário
   if Trim(Host) = '' then
   begin
      Host:= 'http://servicosssi.unb.br:2301';
-     UrlServico:= Host + '/administrativo/informacoes';
+     UrlServico:= Host + '/administrativo/cpd/contato';
      if not InputQuery('Olá muito prazer', 'Informe a URL do Web Service da agenda de telefone do CPD:', UrlServico) then
      begin
         ShowMessage('A agenda de telefone será finalizada!');
@@ -379,7 +390,8 @@ begin
      end;
   end
   else
-    UrlServico:= Host + '/administrativo/informacoes';
+    UrlServico:= Host + '/administrativo/cpd/contato';
+  HostName:= Copy(Copy(Host, Pos('//', Host)+2), 1, Pos(':', Copy(Host, 8))-1);
 
     //importa();
     //exit;
@@ -387,14 +399,23 @@ begin
 
   DbFile:= AppDir + 'agenda.dat';
   SetFileAttributes(PWideChar(HostFile), 2);
-  SetFileAttributes(PWideChar(DbFile), 2);
   StringToFile(HostFile, Host, False);
   StatusBar.Panels[1].Text:= 'Barramento: '+ UrlServico;
-  AlertaFalhaComunicacao:= True;
 
 // Register Hotkey Win + A
   Atalho := GlobalAddAtom('Hotkey1');
   RegisterHotKey(Handle, Atalho, MOD_WIN, VK_F10);
+
+  if (ParamStr(1) = '-silent') then
+  begin
+    AlertaFalhaComunicacao:= False;
+    Application.ShowMainForm := False;
+    Hide;
+    ShowWindow(Application.Handle, SW_HIDE);
+  end
+  else
+    AlertaFalhaComunicacao:= True;
+
 end;
 
 procedure TFormAgenda.FormDestroy(Sender: TObject);
@@ -413,6 +434,7 @@ begin
   edtNome.Clear;
   loadDados();
   cds.First;
+  CheckAutoIniciarWindows;
 end;
 
 procedure TFormAgenda.grdItensDblClick(Sender: TObject);
@@ -443,6 +465,13 @@ begin
     grdItens.DefaultDrawColumnCell(Rect,DataCol, Column,State); // pinta o texto padrão
     inherited;
   end;
+end;
+
+procedure TFormAgenda.grdItensKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_RETURN then
+    PageControl1.ActivePage:= tabContato;
 end;
 
 procedure TFormAgenda.cdsramalChange(Sender: TField);
@@ -693,7 +722,10 @@ var
   DbSize: Integer;
 begin
     try
-      Result:= IdHTTP.get(Url);
+      if Ping then
+        Result:= IdHTTP.get(Url)
+      else
+        Abort;
     except
       DbSize:= FileSize(DbFile);
       // Se o arquivo de cache dos dados já existe, apenas o carrega-o
@@ -702,13 +734,18 @@ begin
         Result:= '';
         cds.LoadFromFile(DbFile);
         if AlertaFalhaComunicacao then
-          ShowMessage('Não foi possível conectar no barramento de serviços, disponibilizando os dados da última consulta!');
+        begin
+          if cds.IsEmpty then
+              ShowMessage('Não foi possível conectar no barramento de serviços.'#13#10#13#10'Verifique a conectividade!')
+           else
+              ShowMessage('Não foi possível conectar no barramento de serviços.'#13#10#13#10'Disponibilizando os dados da última consulta!');
+        end;
       end
       else
       begin
         Result:= '';
         if AlertaFalhaComunicacao then
-          ShowMessage('Não foi possível conectar no barramento de serviços. Verifique a conectividade!');
+          ShowMessage('Não foi possível conectar no barramento de serviços'#13#10#13#10'Verifique a conectividade!');
       end;
     end;
 end;
@@ -767,7 +804,7 @@ begin
     while not ClientDataSet1.Eof do
     begin
       cds.Append;
-      cdsid.AsInteger:= ClientDataSet1.FieldByName('id').AsInteger;
+      //cdsid.AsInteger:= ClientDataSet1.FieldByName('id').AsInteger;
       cdsmatricula.AsString:= ClientDataSet1.FieldByName('matricula').AsString;
       cdsnome.AsString:= ClientDataSet1.FieldByName('nome').AsString;
       cdstelefone.AsString:= ClientDataSet1.FieldByName('telefone1').AsString;
@@ -775,8 +812,12 @@ begin
         cdstelefone.AsString:= '(061) ' + cdstelefone.AsString
       else if Length(cdstelefone.AsString) = 9 then
         cdstelefone.AsString:= '(061) ' + Copy(cdstelefone.AsString, 1, 5) + '-' + Copy(cdstelefone.AsString, 5);
-      cdscelular.AsString:= cdstelefone.AsString;
+      if cdstelefone.IsNull or (cdstelefone.AsString = '') then
+        cdstelefone.AsString:= '(00) 00000-0000';
+      cdscelular.AsString:= '(00) 00000-0000';
       cdsramal.AsString:= ClientDataSet1.FieldByName('ramal').AsString;
+      if cdsramal.IsNull or (cdsramal.AsString = '') then
+        cdsramal.AsString:= '70000';
       cdssetor.AsString:= ClientDataSet1.FieldByName('setor').AsString;
       cdscargo.AsString:= ClientDataSet1.FieldByName('cargo').AsString;
       cdsemail.AsString:= ClientDataSet1.FieldByName('email').AsString;
@@ -801,6 +842,47 @@ procedure TFormAgenda.WMHotKey(var Msg: TWMHotKey);
 begin
   if Msg.HotKey = Atalho then
     TrayIconClick(Self);
+end;
+
+procedure TFormAgenda.CheckAutoIniciarWindows();
+var
+  Reg: TRegistry;
+begin
+  try
+    Reg := TRegistry.Create;
+    try
+      Reg.RootKey := HKEY_CURRENT_USER;
+      Reg.OpenKey('Software\Microsoft\Windows\CurrentVersion\Run\',false);
+      Reg.WriteString('AgendaTelefoneCPD', ParamStr(0) + ' -silent');
+      Reg.CloseKey;
+    finally
+      Reg.Free;
+    end;
+  except
+    // Não retornar nenhum erro
+  end;
+end;
+
+function TFormAgenda.ping(): Boolean;
+var
+  IdICMPClient: TIdICMPClient;
+begin
+  Result:= True;
+  exit;
+  try
+    IdICMPClient := TIdICMPClient.Create(nil);
+    try
+      IdICMPClient.Host := HostName;
+      IdICMPClient.Port := 2301;
+      IdICMPClient.ReceiveTimeout := 700;
+      IdICMPClient.Ping;
+      Result := IdICMPClient.ReplyStatus.BytesReceived > 0;
+    finally
+      IdICMPClient.Free;
+    end;
+  except
+    Result:= False;
+  end;
 end;
 
 end.
