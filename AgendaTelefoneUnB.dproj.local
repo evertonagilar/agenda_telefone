@@ -1,2 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<BorlandProject/>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2017/03/10 13:28:54.000.884,D:\desenvolvimento\agenda_telefone\WebCam\TCamera\camera.pas=</Transaction>
+    <Transaction>2017/03/10 13:28:54.000.908,D:\desenvolvimento\agenda_telefone\WebCam\TCamera\cam.pas=</Transaction>
+    <Transaction>2017/03/10 13:28:54.000.923,D:\desenvolvimento\agenda_telefone\WebCam\TCamera\avicaptura.pas=</Transaction>
+    <Transaction>2017/03/10 13:28:54.000.830,D:\desenvolvimento\agenda_telefone\WebCam\TCamera\piconebarretache.pas=</Transaction>
+    <Transaction>2017/03/10 13:28:54.000.834,D:\desenvolvimento\agenda_telefone\WebCam\Exemplo\CapturaCam.pas=</Transaction>
+  </Transactions>
+</BorlandProject>

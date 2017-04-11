@@ -100,15 +100,6 @@
             <Form>FormAgenda</Form>
         </DCCReference>
         <DCCReference Include="uLkJSON.pas"/>
-        <DCCReference Include="WebCam\TCamera\avicaptura.pas"/>
-        <DCCReference Include="WebCam\TCamera\cam.pas">
-            <Form>MainForm</Form>
-        </DCCReference>
-        <DCCReference Include="WebCam\TCamera\camera.pas"/>
-        <DCCReference Include="WebCam\TCamera\piconebarretache.pas"/>
-        <DCCReference Include="WebCam\Exemplo\CapturaCam.pas">
-            <Form>fCaptura</Form>
-        </DCCReference>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

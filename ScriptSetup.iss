@@ -21,7 +21,7 @@ Compression=none
 SolidCompression=true
 InternalCompressLevel=ultra64
 AppCopyright=Agenda de Telefone - CPD/UnB
-VersionInfoVersion=1.0.0
+VersionInfoVersion=2.0.0
 VersionInfoCompany=Agenda de Telefone - CPD/UnB
 VersionInfoDescription=Agenda de Telefone - CPD/UnB
 WindowVisible=false
@@ -35,10 +35,11 @@ Name: brazilianportuguese; MessagesFile: compiler:Languages\BrazilianPortuguese.
 [Tasks]
 
 [Files]
-Source: "AgendaTelefoneUnB.exe"; DestDir: "{app}"; Flags: nocompression
+Source: "AgendaTelefoneUnB.exe"; DestDir: "{app}"; Flags: nocompression ignoreversion
 Source: "agenda.dat"; DestDir: "{app}"; Flags: nocompression
 Source: "host"; DestDir: "{app}"; Flags: nocompression
 Source: "telefone.ico"; DestDir: "{app}"
+Source: "C:\Program Files (x86)\Embarcadero\Studio\18.0\bin\midas.dll"; DestDir: "{win}"
 
 [_ISToolPreCompile]
 
@@ -52,3 +53,6 @@ Source: "telefone.ico"; DestDir: "{app}"
 Name: "{userdesktop}\AgendaTelefoneCpdUnB"; Filename: "{app}\AgendaTelefoneUnB.exe"; WorkingDir: "{app}"; IconFilename: "{app}\telefone.ico"
 Name: "{group}\AgendaTelefoneCpdUnB"; Filename: "{app}\AgendaTelefoneUnB.exe"; WorkingDir: "{app}"; IconFilename: "{app}\telefone.ico"
 
+[UninstallRun]
+Filename: "{app}\AgendaTelefoneUnB.exe"
+Filename: "{app}\agenda.dat"

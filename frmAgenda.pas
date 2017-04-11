@@ -35,7 +35,6 @@ type
     Label12: TLabel;
     Label13: TLabel;
     Label14: TLabel;
-    Label15: TLabel;
     Label16: TLabel;
     edtMatricula: TDBEdit;
     edtNomeContato: TDBEdit;
@@ -44,7 +43,6 @@ type
     edtRamal: TDBEdit;
     edtSetor: TDBEdit;
     edtCargo: TDBEdit;
-    edtAdmissao: TDBEdit;
     edtEmail: TDBEdit;
     Image1: TImage;
     btnSalvarContato: TSpeedButton;
@@ -67,15 +65,13 @@ type
     cdsvisitante: TBooleanField;
     cdscoordenador: TBooleanField;
     cdssetor_local: TStringField;
-    GroupBox1: TGroupBox;
-    imgFoto: TImage;
-    btnCaptura: TButton;
     ClientDataSet1: TClientDataSet;
     TrayIcon: TTrayIcon;
     PopupMenuTrayIcon: TPopupMenu;
     Finalizar1: TMenuItem;
     ExibirAgenda1: TMenuItem;
     N1: TMenuItem;
+    btnExcluirContato: TSpeedButton;
     procedure edtNomeChange(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure grdItensDrawColumnCell(Sender: TObject; const Rect: TRect;
@@ -92,7 +88,6 @@ type
     procedure cdsramalChange(Sender: TField);
     procedure edtRamalKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure btnCapturaClick(Sender: TObject);
     procedure edtNomeKeyPress(Sender: TObject; var Key: Char);
     procedure edtNomeContatoKeyPress(Sender: TObject; var Key: Char);
     procedure edtSetorKeyPress(Sender: TObject; var Key: Char);
@@ -108,6 +103,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure grdItensKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure btnExcluirContatoClick(Sender: TObject);
   private
     HostFile: string;
     Host: string;
@@ -122,11 +118,11 @@ type
     procedure SendPostRequest(const Json: string);
     procedure SendPutRequest(const Json: string; id: Integer);
     function GetRequest(const Url: string): string;
+    procedure ExcluirContatoRequest();
     procedure ValidaContato();
     procedure importa();
     procedure WMHotKey(var Msg: TWMHotKey); message WM_HOTKEY;
     procedure CheckAutoIniciarWindows;
-    function ping(): Boolean;
   public
     { Public declarations }
   end;
@@ -136,9 +132,9 @@ var
 
 implementation
 
-uses CapturaCam;
 
 {$R *.dfm}
+
 
 function IsDateValid(const Value: string): Boolean;
 begin
@@ -426,15 +422,21 @@ end;
 
 procedure TFormAgenda.FormShow(Sender: TObject);
 begin
-  Left:=(Screen.Width-Width)  div 2;
-  Top:=(Screen.Height-Height) div 2;
-  PageControl1.ActivePage:= tabAgenda;
-  ActiveControl:= edtNome;
-  cds.Filtered:= False;
-  edtNome.Clear;
-  loadDados();
-  cds.First;
-  CheckAutoIniciarWindows;
+  cds.DisableControls;
+  try
+    Left:=(Screen.Width-Width)  div 2;
+    Top:=(Screen.Height-Height) div 2;
+    PageControl1.ActivePage:= tabAgenda;
+    ActiveControl:= edtNome;
+    cds.Filtered:= False;
+    edtNome.Clear;
+    cds.First;
+    loadDados;
+    CheckAutoIniciarWindows;
+    cds.First;
+  finally
+    cds.EnableControls;
+  end;
 end;
 
 procedure TFormAgenda.grdItensDblClick(Sender: TObject);
@@ -471,7 +473,9 @@ procedure TFormAgenda.grdItensKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   if Key = VK_RETURN then
-    PageControl1.ActivePage:= tabContato;
+    PageControl1.ActivePage:= tabContato
+  else if Key = VK_DELETE then
+    btnExcluirContato.Click;
 end;
 
 procedure TFormAgenda.cdsramalChange(Sender: TField);
@@ -538,52 +542,24 @@ begin
     Key:= #0;
 end;
 
-procedure TFormAgenda.btnCapturaClick(Sender: TObject);
-var
-  DirNomeFoto: string;
-  NomeFoto: string;
-  procedure ConverteParaJpeg(ACaminhoFoto: string);
-  var
-    cjBmp: TBitmap;
-    cjJpg: TJpegImage;
-    strNomeSemExtensao: string;
-    AFoto: TImage;
-  begin
-    AFoto:= TImage.Create(Self);
-    AFoto.Parent := Self;
-    AFoto.Visible := False;
-    AFoto.Picture.Bitmap.LoadFromFile(ACaminhoFoto + '.bmp');
-
-    cjJpg := TJPegImage.Create;
-    cjBmp := TBitmap.Create;
-
-    cjBmp.Assign(AFoto.Picture.Bitmap);
-    cjJpg.Assign(cjBMP);
-
-    cjJpg.SaveToFile(ACaminhoFoto + '.jpg');
-    DeleteFile(ACaminhoFoto + '.bmp');
-    cjJpg.Free;
-    cjBmp.Free;
-    AFoto.Free;
-  end;
+procedure TFormAgenda.btnExcluirContatoClick(Sender: TObject);
 begin
-  fCaptura := TfCaptura.Create(Self);
-  try
-    with fCaptura, camCamera do
-    begin
-      DirNomeFoto := ExtractFilePath(Application.ExeName) + cdsmatricula.AsString + '.bmp';
-      NomeFoto := ExtractFilePath(DirNomeFoto) +
-        Copy(ExtractFileName(DirNomeFoto),1, Length(ExtractFileName(DirNomeFoto))-4);
-      FichierImage := ExtractFileName(DirNomeFoto);
-      if fCaptura.ShowModal = mrOk then
-      begin
-        CaptureImageDisque;
-        ConverteParaJpeg(NomeFoto);
-        //cdsfoto('FOTO').AsString := NomeFoto + '.jpg';
-      end;
+  if cdsid.IsNull then
+  begin
+    ShowMessage('Esta operação não pode ser executada agora.');
+    Exit;
+  end;
+  if Application.MessageBox(PWideChar('Você tem certeza que deseja excluir o contato '+ QuotedStr(cdsnome.AsString) + ' ?'), PChar(Application.Title), MB_OKCANCEL) = mrOk then
+  begin
+    Screen.Cursor:= crHourGlass;
+    try
+      ExcluirContatoRequest;
+      cds.Delete;
+      PageControl1.ActivePage:= tabAgenda;
+      ShowMessage('Contato excluído com sucesso!');
+    finally
+      Screen.Cursor:= crDefault;
     end;
-  finally
-    FreeAndNil(fCaptura);
   end;
 end;
 
@@ -596,6 +572,7 @@ begin
   cdsadmissao.AsDateTime:= Date;
   cdsvisitante.AsBoolean:= False;
   cdscoordenador.AsBoolean:= False;
+  cdslocal.AsString:= 'CPD';
   lblState.Caption:= 'Novo Contato';
   ActiveControl:= edtMatricula;
 end;
@@ -650,6 +627,21 @@ begin
   Result:= Result + '}';
 end;
 
+procedure TFormAgenda.ExcluirContatoRequest();
+var
+  UrlDelete: string;
+begin
+  UrlDelete:= UrlServico + '/' + cdsid.AsString;
+  try
+    IdHTTP.Delete(UrlDelete, nil);
+  except
+      on E: Exception do
+      begin
+        raise Exception.Create('Não foi possível excluir o contato. '#13#10#13#10 + 'Motivo: '+ E.Message);
+      end;
+  end;
+end;
+
 procedure TFormAgenda.SendPostRequest(const Json: string);
 var
   Dados: TStringStream;
@@ -657,21 +649,27 @@ var
   obj: TlkJSONobject;
 begin
   Dados:= TStringStream.Create(UTF8Encode(Json));
-  IdHTTP.Request.Method:= 'POST';
   try
-    Response:= IdHTTP.Post(UrlServico, Dados);
-    obj := TlkJSON.ParseText(Response) as TlkJSONobject;
-    cds.Edit;
-    cdsid.AsInteger := obj.Field['id'].Value;
-    cds.Post;
-    PageControl1.ActivePage:= tabAgenda;
-    grditens.SetFocus;
-  except
-    on E: EIdHTTPProtocolException do
-    begin
-      obj := TlkJSON.ParseText(E.ErrorMessage) as TlkJSONobject;
-      raise Exception.Create('Não foi possível salvar os dados do contato. '#13#10#13#10 + 'Motivo: '+ obj.Field['message'].Value);
+    IdHTTP.Request.Method:= 'POST';
+    try
+      Response:= IdHTTP.Post(UrlServico, Dados);
+      obj := TlkJSON.ParseText(Response) as TlkJSONobject;
+      cds.Edit;
+      cdsid.AsInteger := obj.Field['id'].Value;
+      cds.Post;
+    except
+      on E: EIdHTTPProtocolException do
+      begin
+        obj := TlkJSON.ParseText(E.ErrorMessage) as TlkJSONobject;
+        raise Exception.Create('Não foi possível salvar os dados do contato. '#13#10#13#10 + 'Motivo: '+ obj.Field['message'].Value);
+      end;
+      on E: Exception do
+      begin
+        raise Exception.Create('Não foi possível salvar os dados do contato. '#13#10#13#10 + 'Motivo: '+ E.Message);
+      end;
     end;
+  finally
+    Dados.Free;
   end;
 end;
 
@@ -684,18 +682,24 @@ var
   obj: TlkJSONobject;
 begin
   Dados:= TStringStream.Create(UTF8Encode(Json));
-  Url:= UrlServico + '/' + cdsid.AsString;
-  IdHTTP.Request.Method:= 'PUT';
   try
-    Response:= IdHTTP.Put(Url, Dados);
-    PageControl1.ActivePage:= tabAgenda;
-    grditens.SetFocus;
-  except
-    on E: EIdHTTPProtocolException do
-    begin
-      obj := TlkJSON.ParseText(E.ErrorMessage) as TlkJSONobject;
-      raise Exception.Create('Não foi possível salvar os dados do contato. '#13#10#13#10 + 'Motivo: '+ obj.Field['message'].Value);
+    Url:= UrlServico + '/' + cdsid.AsString;
+    IdHTTP.Request.Method:= 'PUT';
+    try
+      Response:= IdHTTP.Put(Url, Dados);
+    except
+      on E: EIdHTTPProtocolException do
+      begin
+        obj := TlkJSON.ParseText(E.ErrorMessage) as TlkJSONobject;
+        raise Exception.Create('Não foi possível salvar os dados do contato. '#13#10#13#10 + 'Motivo: '+ obj.Field['message'].Value);
+      end;
+      on E: Exception do
+      begin
+        raise Exception.Create('Não foi possível salvar os dados do contato. '#13#10#13#10 + 'Motivo: '+ E.Message);
+      end;
     end;
+  finally
+    Dados.Free;
   end;
 end;
 
@@ -707,9 +711,9 @@ begin
     ShowWindow(Application.Handle, SW_SHOW);
     Application.Restore;
     Application.ProcessMessages;
-    Application.ProcessMessages;
-    Application.ProcessMessages;
     Show;
+    Application.ProcessMessages;
+    Application.ProcessMessages;
     BringToFront;
   finally
     AlertaFalhaComunicacao:= True;
@@ -722,10 +726,7 @@ var
   DbSize: Integer;
 begin
     try
-      if Ping then
         Result:= IdHTTP.get(Url)
-      else
-        Abort;
     except
       DbSize:= FileSize(DbFile);
       // Se o arquivo de cache dos dados já existe, apenas o carrega-o
@@ -777,22 +778,23 @@ begin
     edtRamal.SetFocus;
     raise Exception.Create('O ramal do contato é obrigatório!');
   end;
+  if (cdssetor.IsNull or (Trim(cdssetor.AsString) = '')) then
+  begin
+    cdssetor.AsString:= 'CPD';
+  end;
   if (cdslocal.IsNull or (Trim(cdslocal.AsString) = '')) then
   begin
-    edtLocal.SetFocus;
-    raise Exception.Create('O local do contato é obrigatório!');
+    cdslocal.AsString:= 'CPD';
+  end;
+  if (cdscargo.IsNull or (Trim(cdscargo.AsString) = '')) then
+  begin
+    cdscargo.AsString:= 'Não informado';
   end;
   if (cdsemail.IsNull or (Trim(cdsemail.AsString) = '')) then
   begin
     edtEmail.SetFocus;
     raise Exception.Create('O e-mail do contato é obrigatório!');
   end;
-  if (cdsadmissao.IsNull or not IsDateValid(cdsadmissao.AsString)) then
-  begin
-    edtAdmissao.SetFocus;
-    raise Exception.Create('A data de admissão do contato é obrigatório!');
-  end;
-
 end;
 
 procedure TFormAgenda.importa();
@@ -832,7 +834,7 @@ begin
       try
         SendPostRequest(JsonRecord);
       except
-
+        // não reportar erro ao falhar a importação
       end;
       ClientDataSet1.Next;
     end;
@@ -863,27 +865,6 @@ begin
   end;
 end;
 
-function TFormAgenda.ping(): Boolean;
-var
-  IdICMPClient: TIdICMPClient;
-begin
-  Result:= True;
-  exit;
-  try
-    IdICMPClient := TIdICMPClient.Create(nil);
-    try
-      IdICMPClient.Host := HostName;
-      IdICMPClient.Port := 2301;
-      IdICMPClient.ReceiveTimeout := 700;
-      IdICMPClient.Ping;
-      Result := IdICMPClient.ReplyStatus.BytesReceived > 0;
-    finally
-      IdICMPClient.Free;
-    end;
-  except
-    Result:= False;
-  end;
-end;
 
 end.
 

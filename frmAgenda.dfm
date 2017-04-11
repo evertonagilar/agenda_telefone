@@ -43,7 +43,7 @@ object FormAgenda: TFormAgenda
     Top = 0
     Width = 1031
     Height = 579
-    ActivePage = tabAgenda
+    ActivePage = tabContato
     Align = alClient
     TabOrder = 1
     TabPosition = tpBottom
@@ -483,17 +483,9 @@ object FormAgenda: TFormAgenda
         Caption = 'Car&go'
         FocusControl = edtCargo
       end
-      object Label15: TLabel
-        Left = 10
-        Top = 293
-        Width = 45
-        Height = 13
-        Caption = '&Admiss'#227'o'
-        FocusControl = edtAdmissao
-      end
       object Label16: TLabel
         Left = 10
-        Top = 333
+        Top = 294
         Width = 28
         Height = 13
         Caption = '&E-mail'
@@ -566,6 +558,36 @@ object FormAgenda: TFormAgenda
         Caption = '&Local'
         FocusControl = edtLocal
       end
+      object btnExcluirContato: TSpeedButton
+        Left = 178
+        Top = 442
+        Width = 141
+        Height = 29
+        Cursor = crHandPoint
+        Caption = 'E&xcluir Contato'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        Glyph.Data = {
+          76010000424D7601000000000000760000002800000020000000100000000100
+          04000000000000010000130B0000130B00001000000000000000000000000000
+          800000800000008080008000000080008000808000007F7F7F00BFBFBF000000
+          FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00333333333333
+          333333333333333333FF33333333333330003333333333333777333333333333
+          300033FFFFFF3333377739999993333333333777777F3333333F399999933333
+          3300377777733333337733333333333333003333333333333377333333333333
+          3333333333333333333F333333333333330033333F33333333773333C3333333
+          330033337F3333333377333CC3333333333333F77FFFFFFF3FF33CCCCCCCCCC3
+          993337777777777F77F33CCCCCCCCCC399333777777777737733333CC3333333
+          333333377F33333333FF3333C333333330003333733333333777333333333333
+          3000333333333333377733333333333333333333333333333333}
+        NumGlyphs = 2
+        ParentFont = False
+        Transparent = False
+        OnClick = btnExcluirContatoClick
+      end
       object edtMatricula: TDBEdit
         Left = 10
         Top = 104
@@ -637,69 +659,36 @@ object FormAgenda: TFormAgenda
         TabOrder = 7
         OnKeyPress = edtCargoKeyPress
       end
-      object edtAdmissao: TDBEdit
-        Left = 10
-        Top = 309
-        Width = 135
-        Height = 19
-        DataField = 'admissao'
-        DataSource = ds
-        TabOrder = 8
-      end
       object edtEmail: TDBEdit
         Left = 10
-        Top = 349
+        Top = 310
         Width = 415
         Height = 19
         DataField = 'email'
         DataSource = ds
         MaxLength = 150
-        TabOrder = 9
+        TabOrder = 8
         OnKeyPress = edtEmailKeyPress
       end
       object DBCheckBox1: TDBCheckBox
         Left = 10
-        Top = 381
+        Top = 342
         Width = 97
         Height = 17
         Caption = #201' um visitante?'
         DataField = 'visitante'
         DataSource = ds
-        TabOrder = 10
+        TabOrder = 9
       end
       object edtLocal: TDBEdit
         Left = 191
         Top = 229
-        Width = 234
+        Width = 166
         Height = 19
         DataField = 'local'
         DataSource = ds
         TabOrder = 6
         OnKeyPress = edtLocalKeyPress
-      end
-      object GroupBox1: TGroupBox
-        Left = 761
-        Top = 24
-        Width = 233
-        Height = 240
-        TabOrder = 11
-        object imgFoto: TImage
-          Left = 3
-          Top = 3
-          Width = 225
-          Height = 202
-          AutoSize = True
-          Stretch = True
-        end
-        object btnCaptura: TButton
-          Left = 3
-          Top = 211
-          Width = 225
-          Height = 25
-          Caption = 'Capturar'
-          TabOrder = 0
-          OnClick = btnCapturaClick
-        end
       end
     end
   end
@@ -815,12 +804,12 @@ object FormAgenda: TFormAgenda
     end
     object cdstelefone: TStringField
       FieldName = 'telefone'
-      EditMask = '!\(99\)\ 00000-0000;1;_'
+      EditMask = '!\(99\)\ 99999-9999;1;_'
       Size = 30
     end
     object cdscelular: TStringField
       FieldName = 'celular'
-      EditMask = '!\(99\)\ 00000-0000;1;_'
+      EditMask = '!\(99\)\ 99999-9999;1;_'
       FixedChar = True
       Size = 30
     end
@@ -895,7 +884,7 @@ object FormAgenda: TFormAgenda
     Left = 312
     Top = 472
     Bitmap = {
-      494C010115001800500010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C0101150018005C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000006000000001002000000000000060
       00000000000000000000000000000000000000000000000000007F7F7F007F7F
       7F007F7F7F007F7F7F007F7F7F007F7F7F007F7F7F007F7F7F007F7F7F007F7F
