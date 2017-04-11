@@ -376,7 +376,7 @@ begin
   // Se o host não foi informado, pergunta para o usuário
   if Trim(Host) = '' then
   begin
-     Host:= 'http://servicosssi.unb.br:2301';
+     Host:= 'http://servicoscpd.unb.br:2301';
      UrlServico:= Host + '/administrativo/cpd/contato';
      if not InputQuery('Olá muito prazer', 'Informe a URL do Web Service da agenda de telefone do CPD:', UrlServico) then
      begin
